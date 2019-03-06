@@ -1,5 +1,5 @@
 /**
- * 
+ * Header file for exteral functions
  */
 #define CONF_ERR_SUCCESS		0
 #define CONF_ERR_NOT_INIT		1
@@ -11,4 +11,3 @@
 
 #define CONF_CHAR				0
 #define CONF_INT				1
-

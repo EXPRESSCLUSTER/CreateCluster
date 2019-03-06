@@ -143,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\clpconf.h" />
+    <ClInclude Include="src\clpconfin.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\clpconf.cpp" />

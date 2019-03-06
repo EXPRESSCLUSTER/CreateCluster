@@ -7,6 +7,7 @@
 #include <shlwapi.h>
 
 #include "clpconf.h"
+#include "clpconfin.h"
 
 /* macro */
 #define RELEASE(obj) if ((obj) != NULL) { obj->Release(); (obj) = NULL; }
@@ -149,7 +150,17 @@ func_exit:
 
 /**
  * clpconf_add_cluster
+ * 
  */
+int __stdcall
+clpconf_add_cluster(
+	IN char *os,
+	IN char *name
+)
+{
+	return 0
+}
+
 
 
 /**

@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.26228.73
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clpconf", "clpconf\clpconf.vcxproj", "{C1527A65-1C9C-4721-8874-11E592AE4C73}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{053AD54F-DB67-467B-BA9B-FCADB43E2225}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E6BC9336-5322-48CA-992A-1A2CF7745474}
 	EndGlobalSection
 EndGlobal
