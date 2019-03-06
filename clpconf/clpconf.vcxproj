@@ -139,6 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="src\clpconf.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\clpconf.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\clpconf.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
