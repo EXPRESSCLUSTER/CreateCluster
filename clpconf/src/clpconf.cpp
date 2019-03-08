@@ -1,3 +1,7 @@
+/**
+ * external functions
+ */
+
 #define _WIN32_DCOM
 #include <stdio.h>
 #include <windows.h>
@@ -147,20 +151,121 @@ func_exit:
 	return nfuncret;
 }
 
-
 /**
- * clpconf_add_cluster
- * 
+ * clpconf_add_cls
+ * - Add cluster name
  */
 int __stdcall
-clpconf_add_cluster(
+clpconf_add_cls(
 	IN char *os,
 	IN char *name
 )
 {
-	return 0
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* set cluster name */
+	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/%s", name);
+	
+
+	return nfuncret;
 }
 
+
+/**
+ * clpconf_add_srv
+ * - Add a server to a cluster
+ */
+int __stdcall
+clpconf_add_srv(
+	IN char *srvname,
+	IN char *priority
+)
+{
+	return 0;
+}
+
+/**
+ * add IP address to a server
+ */
+
+/**
+ * Add NP
+ */
+
+/**
+ * clpconf_add_grp
+ * - Add a failover group to a cluster
+ */
+int __stdcall
+clpconf_add_grp(
+	IN char *grptype,
+	IN char *grpname
+)
+{
+	return 0;
+}
+
+
+/**
+ * clpconf_add_rsc
+ */
+int __stdcall
+clpconf_add_rsc(
+	IN char *grptype,
+	IN char *grpname,
+	IN char *rsctype,
+	IN char *rscname
+)
+{
+	return 0;
+}
+
+
+/**
+ * clpconf_add_rsc_param
+ */
+int __stdcall
+clpconf_add_rsc_param(
+	IN char *rsctype,
+	IN char *rscname,
+	IN char *path,
+	IN char *param
+)
+{
+	return 0;
+}
+
+
+/**
+ * clpconf_add_mon
+ */
+int __stdcall
+clpconf_add_mon(
+	IN char *montype,
+	IN char *monname
+)
+{
+	return 0;
+}
+
+
+/**
+ * clpconf_add_mon_param
+ */
+int __stdcall
+clpconf_add_mon_param(
+	IN char *montype,
+	IN char *monname,
+	IN char *path,
+	IN char *param
+)
+{
+	return 0;
+}
 
 
 /**
@@ -182,7 +287,7 @@ clpconf_set_value(
 	IXMLDOMNode *node;
 	HRESULT hr;
 	char wk_path[CONF_PATH_LEN];
-	char wk_int[64];
+	char wk_int[WK_INT];
 	void *valp;
 	int nfuncret, nret;
 
@@ -238,7 +343,7 @@ clpconf_set_value(
 	/* タイプのチェック */
 	switch (type) {
 	case CONF_INT:
-		sprintf(wk_int, "%d", *((int *)value));
+		sprintf_s(wk_int, WK_INT,"%d", *((int *)value));
 		valp = wk_int;
 		break;
 	case CONF_CHAR:
@@ -385,6 +490,8 @@ func_exit:
 //	FUNC_LEAVE_INT(nfuncret);
 	return nfuncret;
 }
+
+
 
 
 static int
@@ -647,11 +754,6 @@ func_exit:
 		}
 	}
 
-//s	FUNC_LEAVE_INT(nfuncret);
+//	FUNC_LEAVE_INT(nfuncret);
 	return nfuncret;
 }
-
-	int find_value_node(IXMLDOMDocument *, IXMLDOMNode *, char *, char *, BOOL, IXMLDOMNode **)
-	{
-		return 0;
-	}
