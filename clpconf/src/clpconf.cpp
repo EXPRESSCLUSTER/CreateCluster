@@ -9,6 +9,7 @@
 #include <comdef.h>
 #include <stdlib.h>
 #include <shlwapi.h>
+#include <errno.h>
 
 #include "clpconf.h"
 #include "clpconfin.h"
@@ -26,36 +27,12 @@ static int g_initcnt = 0;
 /* com init flag */
 static BOOL g_cominit = FALSE;
 
+void *xmldoc;
+
 /* internal function */
 static int find_value_node(IXMLDOMDocument *, IXMLDOMNode *, char *, char *, BOOL, IXMLDOMNode **);
 static int find_child_node(IXMLDOMDocument *, IXMLDOMNode *, char *, char *, IXMLDOMNode **);
 static int make_child_node(IXMLDOMDocument *, IXMLDOMNode *, char *, char *, IXMLDOMNode **);
-
-/**
- * DllEntryPoint
- *
- */
-#undef  FUNC
-#define FUNC    "DllEntryPoint"
-
-BOOL WINAPI
-DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved)
-{
-	switch (reason)
-	{
-	case DLL_PROCESS_ATTACH:
-		InitializeCriticalSection(&g_critsec);
-		break;
-	case DLL_PROCESS_DETACH:
-		DeleteCriticalSection(&g_critsec);
-		break;
-	default:
-		break;
-	}
-
-	return TRUE;
-}
-
 
 /**
 * clpconf_init
@@ -65,39 +42,108 @@ DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved)
 
 int __stdcall
 clpconf_init(
-	void
+	char *lang,
+	char *os
 )
 {
+	FILE *fp;
 	HRESULT hr;
-	int nfuncret;
+	IXMLDOMDocument *xmldoc;
+	VARIANT_BOOL success;
+	VARIANT var;
+	int nfuncret, nret;
 
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
-	EnterCriticalSection(&g_critsec);
-
-	/* check call count */
-	if (g_initcnt < 0)
+	/* create template file */
+	fp = fopen(".\\clp.conf", "w+");
+	if (fp == NULL)
 	{
-//		nfuncret = OHAE_XMLERR_OTHER;
+		printf("fopen() failed. (errno: %d)\n", errno);
+		nfuncret = CONF_ERR_FILE;
 		goto func_exit;
 	}
-	else if (g_initcnt == 0)
+	if (!strcmp(lang, "jp"))
 	{
+		fprintf(fp, "<?xml version=\"1.0\" encoding=\"SJIS\"?>\n");
+	}
+	else if (!strcmp(lang, "cn"))
+	{
+		fprintf(fp, "<?xml version=\"1.0\" encoding=\"GB2321\"?>\n");
+	}
+	else if (!strcmp(lang, "en"))
+	{
+		fprintf(fp, "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n");
+	}
+	else
+	{
+		printf("Invalid lang (jp, en, cn are available only).\n");
+		nfuncret = CONF_ERR_FILE;
+		goto func_exit;
+	}
+	fprintf(fp, "<root>\n</root>");
+	fclose(fp);
+
+#if 0
+	/* initialize COM */
+	hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+	{
+		printf("CoInitializeEx() failed. (hr: %x)\n", hr);
+		nfuncret = CONF_ERR_COM;
+		goto func_exit;
 	}
 
-	/* initialize COM */
-	if (!g_cominit)
+	try
 	{
-		hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+		/* create IXMLDOMDocument */
+		hr = CoCreateInstance(CLSID_DOMDocument, 0, CLSCTX_INPROC_SERVER,
+			IID_IXMLDOMDocument, (LPVOID*)&xmldoc);
 		if (FAILED(hr))
 		{
+			nfuncret = CONF_ERR_COM;
+			xmldoc = NULL;
+			goto func_exit;
 		}
-		else
+
+		hr = xmldoc->put_async(VARIANT_FALSE);
+		if (hr != S_OK)
 		{
-			g_cominit = TRUE;
+			nfuncret = CONF_ERR_OTHER;
+			goto func_exit;
 		}
+
+		/* XMLファイルのロード */
+		nret = MultiByteToWideChar(CP_ACP, 0, xmlpath, -1, wxmlpath, sizeof(wxmlpath));
+		if (nret == 0)
+		{
+			nfuncret = CONF_ERR_OTHER;
+			goto func_exit;
+		}
+
+		var.vt = VT_BSTR;
+		var.bstrVal = SysAllocString(wxmlpath);
+		success = VARIANT_FALSE;
+		hr = xmldoc->load(var, &success);
+		if (hr != S_OK || !success)
+		{
+			nfuncret = CONF_ERR_OTHER;
+			VariantClear(&var);
+			goto func_exit;
+		}
+		VariantClear(&var);
 	}
+	catch (_com_error &e)
+	{
+#if 0
+		log_write(LOG_ERR, "Error = %x\nMessage = %s\nDescription = %s",
+			e.Error(), (char*)e.ErrorMessage(), (char*)e.Description());
+#endif
+		nfuncret = CONF_ERR_OTHER;
+		goto func_exit;
+	}
+#endif
 
 func_exit:
 
@@ -121,20 +167,6 @@ clpconf_term(
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
-	EnterCriticalSection(&g_critsec);
-
-	/* check call count */
-	if (g_initcnt <= 0)
-	{
-//		nfuncret = OHAE_XMLERR_NOT_INIT;
-		goto func_exit;
-	}
-	else if (g_initcnt > 1)
-	{
-		g_initcnt--;
-		goto func_exit;
-	}
-
 	/* uninitialize COM */
 	if (g_cominit)
 	{
@@ -142,22 +174,17 @@ clpconf_term(
 		g_cominit = FALSE;
 	}
 
-	g_initcnt--;
-
-func_exit:
-
-	LeaveCriticalSection(&g_critsec);
-
 	return nfuncret;
 }
 
+
 /**
  * clpconf_add_cls
- * - Add cluster name
  */
 int __stdcall
 clpconf_add_cls(
 	IN char *os,
+	IN char *lang,
 	IN char *name
 )
 {
@@ -168,9 +195,11 @@ clpconf_add_cls(
 	nfuncret = CONF_ERR_SUCCESS;
 
 	/* set cluster name */
-	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/%s", name);
-	
-
+	sprintf_s(path, CONF_PATH_LEN, "/root/cluster");
+	printf("path: %s\n", path);
+#if 0
+	clpconf_set_value(xmlhndl, path, CONF_CHAR, name);
+#endif
 	return nfuncret;
 }
 
@@ -191,10 +220,30 @@ clpconf_add_srv(
 /**
  * add IP address to a server
  */
+int __stdcall
+clpconf_add_ip(
+	IN char *ipaddr,
+	IN char *priority,
+	IN char *mdc
+)
+{
+	return 0;
+}
+
 
 /**
- * Add NP
+ * add NP
  */
+int __stdcall
+clpconf_add_np(
+	IN char *ipaddr,
+	IN char *priority,
+	IN char *mdc
+)
+{
+	return 0;
+}
+
 
 /**
  * clpconf_add_grp
@@ -298,29 +347,22 @@ clpconf_set_value(
 	node = NULL;
 
 	/* check */
-	if (g_initcnt <= 0)
-	{
-		nfuncret = CONF_ERR_NOT_INIT;
-		goto func_exit;
-	}
-
-	/* check */
 	if (xmlhndl == NULL)
 	{
 //		log_write(LOG_ERR, "xmlhndl is NULL.");
-		nfuncret =CONF_ERR_INVALID_PARAM;
+		nfuncret =CONF_ERR_PARAM;
 		goto func_exit;
 	}
 	if (path == NULL)
 	{
 //		log_write(LOG_ERR, "path is NULL.");
-		nfuncret = CONF_ERR_INVALID_PARAM;
+		nfuncret = CONF_ERR_PARAM;
 		goto func_exit;
 	}
 	if (value == NULL)
 	{
 //		log_write(LOG_ERR, "value is NULL.");
-		nfuncret = CONF_ERR_INVALID_PARAM;
+		nfuncret = CONF_ERR_PARAM;
 		goto func_exit;
 	}
 
@@ -328,7 +370,7 @@ clpconf_set_value(
 	if (strlen(path) >= sizeof(wk_path))
 	{
 //		log_write(LOG_ERR, "path is too long.");
-		nfuncret = CONF_ERR_INVALID_PARAM;;
+		nfuncret = CONF_ERR_PARAM;
 		goto func_exit;
 	}
 
@@ -336,7 +378,7 @@ clpconf_set_value(
 	if (strncmp(path, "/root/", strlen("/root/")) != 0)
 	{
 //		log_write(LOG_ERR, "path is invalid. (path=%s)", path);
-		nfuncret = CONF_ERR_INVALID_PARAM;
+		nfuncret = CONF_ERR_PARAM;
 		goto func_exit;
 	}
 
@@ -351,7 +393,7 @@ clpconf_set_value(
 		break;
 	default:
 //		log_write(LOG_ERR, "type is invalid. (type=%d)", type);
-		nfuncret = CONF_ERR_INVALID_PARAM;
+		nfuncret = CONF_ERR_PARAM;
 		goto func_exit;
 	}
 
@@ -450,7 +492,7 @@ find_value_node(
 	if (nret != CONF_ERR_SUCCESS) {
 
 		/* 見つからなければ */
-		if (!force || nret != CONF_ERR_NOTEXIST_NODE)
+		if (!force || nret != CONF_ERR_NOTEXIST)
 		{
 			nfuncret = nret;
 			goto func_exit;
@@ -618,7 +660,7 @@ find_child_node(
 		/* 発見？ */
 		if (i >= length)
 		{
-			nfuncret = CONF_ERR_NOTEXIST_NODE;
+			nfuncret = CONF_ERR_NOTEXIST;
 			goto func_exit;
 		}
 	}

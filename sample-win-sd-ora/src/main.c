@@ -19,26 +19,23 @@ main(
 	/* initialize */
 	nfuncret = ERR_SUCCESS;
 
-	hDll = LoadLibrary("clpconf.dll");
-	if (!hDll)
+	/* initialize clpconf */
+	nfuncret = clpconf_init("jp", "windows");
+	if (nfuncret)
 	{
-		printf("LoadLibrary() failed (ret: %d)", GetLastError());
-		return ERR_WIN32API;
+		printf("clpconf_init() failed. (ret: %d)\n", nfuncret);
 	}
 
+	/* add cluster */
+	nfuncret = clpconf_add_cls("windows", "jp", "cluster");
 
-#if 0
-	nfuncret = clpconf_init();
-	if (!nfuncret)
-	{
-		printf("clpconf_init() failed. (ret: %d)", nfuncret);
-	}
 
+	/* terminate clpconf */
 	nfuncret = clpconf_term();
-	if (!nfuncret)
+	if (nfuncret)
 	{
-		printf("clpconf_term() failed. (ret: %d)", nfuncret);
+		printf("clpconf_term() failed. (ret: %d)\n", nfuncret);
 	}
-#endif
+
 	return 0;
 }
