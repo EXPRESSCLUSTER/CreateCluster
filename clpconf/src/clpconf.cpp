@@ -4,7 +4,7 @@
 
 #define _WIN32_DCOM
 #include <stdio.h>
-#include <windows.h>
+#include <Windows.h>
 #include <msxml2.h>
 #include <comdef.h>
 #include <stdlib.h>
@@ -19,7 +19,7 @@
 #define SYSFREE(str) if ((str) != NULL) { SysFreeString(str); (str) = NULL; }
 
 /* critical section */
-static CRITICAL_SECTION g_critsec;
+//static CRITICAL_SECTION g_critsec;
 
 /* init count */
 static int g_initcnt = 0;
@@ -57,33 +57,12 @@ clpconf_init(
 	nfuncret = CONF_ERR_SUCCESS;
 
 	/* create template file */
-	fp = fopen(".\\clp.conf", "w+");
-	if (fp == NULL)
+	nfuncret = createfile(lang);
+	if (nfuncret)
 	{
-		printf("fopen() failed. (errno: %d)\n", errno);
-		nfuncret = CONF_ERR_FILE;
+		printf("createfile() failed. (ret: %d)", nfuncret);
 		goto func_exit;
 	}
-	if (!strcmp(lang, "jp"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"SJIS\"?>\n");
-	}
-	else if (!strcmp(lang, "cn"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"GB2321\"?>\n");
-	}
-	else if (!strcmp(lang, "en"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n");
-	}
-	else
-	{
-		printf("Invalid lang (jp, en, cn are available only).\n");
-		nfuncret = CONF_ERR_FILE;
-		goto func_exit;
-	}
-	fprintf(fp, "<root>\n</root>");
-	fclose(fp);
 
 #if 0
 	/* initialize COM */
