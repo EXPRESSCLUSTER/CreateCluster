@@ -5,7 +5,7 @@
 #define _WIN32_DCOM
 #include <stdio.h>
 #include <Windows.h>
-#include <msxml2.h>
+#include <MsXml2.h>
 #include <comdef.h>
 #include <stdlib.h>
 #include <shlwapi.h>
@@ -18,16 +18,12 @@
 #define RELEASE(obj) if ((obj) != NULL) { obj->Release(); (obj) = NULL; }
 #define SYSFREE(str) if ((str) != NULL) { SysFreeString(str); (str) = NULL; }
 
-/* critical section */
-//static CRITICAL_SECTION g_critsec;
-
 /* init count */
 static int g_initcnt = 0;
 
 /* com init flag */
 static BOOL g_cominit = FALSE;
-
-void *xmldoc;
+void *g_hxml;
 
 /* internal function */
 static int find_value_node(IXMLDOMDocument *, IXMLDOMNode *, char *, char *, BOOL, IXMLDOMNode **);
@@ -51,10 +47,12 @@ clpconf_init(
 	IXMLDOMDocument *xmldoc;
 	VARIANT_BOOL success;
 	VARIANT var;
+	WCHAR wxmlpath[CONF_PATH_LEN];
 	int nfuncret, nret;
 
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
+	hr = S_OK;
 
 	/* create template file */
 	nfuncret = createfile(lang);
@@ -64,7 +62,6 @@ clpconf_init(
 		goto func_exit;
 	}
 
-#if 0
 	/* initialize COM */
 	hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	if (FAILED(hr))
@@ -73,11 +70,11 @@ clpconf_init(
 		nfuncret = CONF_ERR_COM;
 		goto func_exit;
 	}
-
+#if 0
 	try
 	{
 		/* create IXMLDOMDocument */
-		hr = CoCreateInstance(CLSID_DOMDocument, 0, CLSCTX_INPROC_SERVER,
+		hr = CoCreateInstance(CLSID_DOMDocument2, 0, CLSCTX_INPROC_SERVER,
 			IID_IXMLDOMDocument, (LPVOID*)&xmldoc);
 		if (FAILED(hr))
 		{
@@ -93,8 +90,8 @@ clpconf_init(
 			goto func_exit;
 		}
 
-		/* XMLファイルのロード */
-		nret = MultiByteToWideChar(CP_ACP, 0, xmlpath, -1, wxmlpath, sizeof(wxmlpath));
+		/* load XML file */
+		nret = MultiByteToWideChar(CP_ACP, 0, ".\\clp.conf", -1, wxmlpath, sizeof(wxmlpath));
 		if (nret == 0)
 		{
 			nfuncret = CONF_ERR_OTHER;
@@ -119,11 +116,12 @@ clpconf_init(
 		log_write(LOG_ERR, "Error = %x\nMessage = %s\nDescription = %s",
 			e.Error(), (char*)e.ErrorMessage(), (char*)e.Description());
 #endif
-		nfuncret = CONF_ERR_OTHER;
+		nfuncret = CONF_ERR_COM;
 		goto func_exit;
 	}
-#endif
 
+	g_hxml = xmldoc;
+#endif
 func_exit:
 
 	return nfuncret;
@@ -162,8 +160,6 @@ clpconf_term(
  */
 int __stdcall
 clpconf_add_cls(
-	IN char *os,
-	IN char *lang,
 	IN char *name
 )
 {

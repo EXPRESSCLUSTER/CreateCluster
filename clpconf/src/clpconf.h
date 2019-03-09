@@ -23,7 +23,7 @@ extern "C" {
  /* prototype */
 int __stdcall clpconf_init(char *, char *);
 int __stdcall clpconf_term(void);
-int __stdcall clpconf_add_cls(char *, char *, char *);
+int __stdcall clpconf_add_cls(char *);
 
 #ifdef __cplusplus
 }
