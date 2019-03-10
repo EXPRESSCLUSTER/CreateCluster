@@ -23,7 +23,7 @@ static int g_initcnt = 0;
 static BOOL g_cominit = FALSE;
 static void *g_hxml = NULL;
 static char g_charset[16];
-
+static char g_os[16];
 
 /**
 * clpconf_init
@@ -70,7 +70,19 @@ clpconf_init(
 		nfuncret = CONF_ERR_FILE;
 		goto func_exit;
 	}
-	
+
+	/* check OS */
+	if (!strcmp(os, "windows"))
+	{
+		strcpy(g_os, os);
+	}
+	else
+	{
+		printf("invalid OS (windows, linux are available only).\n");
+		nfuncret = CONF_ERR_FILE;
+		goto func_exit;
+	}
+
 	/* initialize COM */
 	hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	if (FAILED(hr))
@@ -283,13 +295,43 @@ clpconf_add_cls(
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
-	/* set cluster name */
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/all/charset");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, g_charset);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/all/serveros");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, g_os);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/all/encode");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, g_charset);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	/* set cluster name, comment */
 	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/name");
-	printf("path: %s\n", path);
 	nfuncret = set_value(g_hxml, path, CONF_CHAR, name);
 	if (nfuncret)
 	{
 		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/comment");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
 	}
 
 	return nfuncret;
@@ -306,6 +348,22 @@ clpconf_add_srv(
 	IN char *priority
 )
 {
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/priority", srvname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, priority);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+
 	return 0;
 }
 

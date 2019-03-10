@@ -35,6 +35,12 @@ main(
 	}
 
 	/* add server */
+	nfuncret = clpconf_add_srv("ws2016-11", "0");
+	if (nfuncret)
+	{
+		printf("clpconf_add_srv() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
 
 	/* add IP address */
 

@@ -23,6 +23,7 @@ extern "C" {
 	int __stdcall clpconf_term(IN void);
 	int __stdcall clpconf_save(IN void);
 	int __stdcall clpconf_add_cls(IN char *name);
+	int __stdcall clpconf_add_srv(IN char *srvname, IN char *priority);
 #ifdef __cplusplus
 }
 #endif
