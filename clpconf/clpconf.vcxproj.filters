@@ -31,7 +31,7 @@
     <ClCompile Include="src\clpconf.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\clpconfin.c">
+    <ClCompile Include="src\clpconfin.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

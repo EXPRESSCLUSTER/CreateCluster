@@ -27,8 +27,27 @@ main(
 	}
 
 	/* add cluster */
-	nfuncret = clpconf_add_cls("windows", "jp", "cluster");
+	nfuncret = clpconf_add_cls("cluster");
+	if (nfuncret)
+	{
+		printf("clpconf_add_cls() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
 
+	/* add server */
+
+	/* add IP address */
+
+	/* add NP resource */
+
+	/* save cluster configuration */
+	nfuncret = clpconf_save();
+	if (nfuncret)
+	{
+		printf("clpconf_save() failed. (ret: %d)\n", nfuncret);
+	}
+
+func_exit:
 
 	/* terminate clpconf */
 	nfuncret = clpconf_term();

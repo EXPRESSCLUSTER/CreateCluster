@@ -93,6 +93,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\src\clpconf.def</ModuleDefinitionFile>
+      <AdditionalDependencies>msxml2.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -148,7 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\clpconf.cpp" />
-    <ClCompile Include="src\clpconfin.c" />
+    <ClCompile Include="src\clpconfin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

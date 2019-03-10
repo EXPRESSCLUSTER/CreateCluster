@@ -4,12 +4,13 @@ LIBRARY clpconf
 EXPORTS
 	clpconf_init			@1
 	clpconf_term			@2
-	clpconf_add_cls			@3
-	clpconf_add_srv			@4
-	clpconf_add_ip			@5
-	clpconf_add_np			@6
-	clpconf_add_grp			@7
-	clpconf_add_rsc			@8
-	clpconf_add_rsc_param	@9
-	clpconf_add_mon			@10
-	clpconf_add_mon_param	@11
+	clpconf_save			@3
+	clpconf_add_cls			@4
+	clpconf_add_srv			@5
+	clpconf_add_ip			@6
+	clpconf_add_np			@7
+	clpconf_add_grp			@8
+	clpconf_add_rsc			@9
+	clpconf_add_rsc_param	@10
+	clpconf_add_mon			@11
+	clpconf_add_mon_param	@12
