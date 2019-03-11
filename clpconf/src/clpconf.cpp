@@ -25,6 +25,13 @@ static void *g_hxml = NULL;
 static char g_charset[16];
 static char g_os[16];
 
+static int srvnum = 0;
+static int hbnum = 0;
+static int npnum = 0;
+static int grpnum = 0;
+static int rscnum = 0;
+static int monnum = 0;
+
 /**
 * clpconf_init
 */
@@ -190,12 +197,24 @@ clpconf_save(
 	IStream *stmfile;
 	IMXWriter *wrt;
 	HRESULT hr;
+	char path[CONF_PATH_LEN];
 	int nfuncret;
 
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
 	xmldoc = (IXMLDOMDocument *)g_hxml;
+
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/webmgr/client/objectnumber");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "10");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+
 	try
 	{
 		/* 保存ファイルのクリエート */
@@ -383,7 +402,7 @@ clpconf_add_ip(
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
-	/* set charset, serveros, encode */
+	/* set IP addres to server */
 	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/type", srvname, id);
 	nfuncret = set_value(g_hxml, path, CONF_CHAR, "lan");
 	if (nfuncret)
@@ -393,6 +412,50 @@ clpconf_add_ip(
 	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/info", srvname, id);
 	nfuncret = set_value(g_hxml, path, CONF_CHAR, ipaddr);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	return nfuncret;
+}
+
+/**
+ * clpconf_add_hb
+ */
+int __stdcall
+clpconf_add_hb(
+	IN char *priority,
+	IN char *id
+)
+{
+	char path[CONF_PATH_LEN];
+	int khbenum = 0;
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* set heartbeat to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/types@lankhb");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	khbenum = atoi(priority);
+	khbenum++;
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/lankhb@lankhb%d/priority", khbenum);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, priority);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/lankhb@lankhb%d/device", khbenum);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, id);
 	if (nfuncret)
 	{
 		printf("save_value() failed. (ret: %d)\n", nfuncret);

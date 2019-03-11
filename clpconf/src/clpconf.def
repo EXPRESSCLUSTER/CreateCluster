@@ -8,9 +8,10 @@ EXPORTS
 	clpconf_add_cls			@4
 	clpconf_add_srv			@5
 	clpconf_add_ip			@6
-	clpconf_add_np			@7
-	clpconf_add_grp			@8
-	clpconf_add_rsc			@9
-	clpconf_add_rsc_param	@10
-	clpconf_add_mon			@11
-	clpconf_add_mon_param	@12
+	clpconf_add_hb			@7
+	clpconf_add_np			@8
+	clpconf_add_grp			@9
+	clpconf_add_rsc			@10
+	clpconf_add_rsc_param	@11
+	clpconf_add_mon			@12
+	clpconf_add_mon_param	@13

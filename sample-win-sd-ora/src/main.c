@@ -35,7 +35,13 @@ main(
 	}
 
 	/* add server */
-	nfuncret = clpconf_add_srv("ws2016-11", "0");
+	nfuncret = clpconf_add_srv("ws2016-197", "0");
+	if (nfuncret)
+	{
+		printf("clpconf_add_srv() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_srv("ws2016-198", "1");
 	if (nfuncret)
 	{
 		printf("clpconf_add_srv() failed. (ret: %d)\n", nfuncret);
@@ -43,13 +49,39 @@ main(
 	}
 
 	/* add IP address */
-	nfuncret = clpconf_add_ip("ws2016-11", "0", "192.168.0.11");
+	nfuncret = clpconf_add_ip("ws2016-197", "0", "192.168.0.197");
 	if (nfuncret)
 	{
 		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
 		goto func_exit;
 	}
-	nfuncret = clpconf_add_ip("ws2016-11", "1", "192.168.1.11");
+	nfuncret = clpconf_add_ip("ws2016-197", "1", "192.168.1.197");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_ip("ws2016-198", "0", "192.168.0.198");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_ip("ws2016-198", "1", "192.168.1.198");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+
+	/* add heartbeat */
+	nfuncret = clpconf_add_hb("0", "0");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_hb("1", "1");
 	if (nfuncret)
 	{
 		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);

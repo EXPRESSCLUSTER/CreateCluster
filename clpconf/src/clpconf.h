@@ -25,6 +25,7 @@ extern "C" {
 	int __stdcall clpconf_add_cls(IN char *name);
 	int __stdcall clpconf_add_srv(IN char *srvname, IN char *priority);
 	int __stdcall clpconf_add_ip(IN char *srvname, IN char *id, IN char *ipaddr);
+	int __stdcall clpconf_add_hb(IN char *priority, IN char *id);
 #ifdef __cplusplus
 }
 #endif

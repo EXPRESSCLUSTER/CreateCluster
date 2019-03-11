@@ -30,7 +30,7 @@ create_file(
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
 
-	/* create configuration file */
+	/* create a base configuration file */
 	fp = fopen(".\\clp.conf", "w+");
 	if (fp == NULL)
 	{
