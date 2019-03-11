@@ -157,7 +157,7 @@ func_exit:
 
 int __stdcall
 clpconf_term(
-	IN void
+	void
 )
 {
 	int nfuncret;
@@ -181,7 +181,7 @@ clpconf_term(
  */
 int __stdcall
 clpconf_save(
-	IN void
+	void
 )
 {
 	IXMLDOMDocument *xmldoc;
@@ -372,11 +372,33 @@ clpconf_add_srv(
  */
 int __stdcall
 clpconf_add_ip(
-	IN char *ipaddr,
-	IN char *priority,
-	IN char *mdc
+	IN char *srvname,
+	IN char *id,
+	IN char *ipaddr
 )
 {
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/type", srvname, id);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "lan");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/info", srvname, id);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, ipaddr);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
 	return 0;
 }
 

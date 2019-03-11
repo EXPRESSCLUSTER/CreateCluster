@@ -43,6 +43,18 @@ main(
 	}
 
 	/* add IP address */
+	nfuncret = clpconf_add_ip("ws2016-11", "0", "192.168.0.11");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_ip("ws2016-11", "1", "192.168.1.11");
+	if (nfuncret)
+	{
+		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
 
 	/* add NP resource */
 

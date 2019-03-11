@@ -20,10 +20,11 @@ extern "C" {
 #endif
 	 /* prototype */
 	int __stdcall clpconf_init(IN char *lang, IN char *os);
-	int __stdcall clpconf_term(IN void);
-	int __stdcall clpconf_save(IN void);
+	int __stdcall clpconf_term(void);
+	int __stdcall clpconf_save(void);
 	int __stdcall clpconf_add_cls(IN char *name);
 	int __stdcall clpconf_add_srv(IN char *srvname, IN char *priority);
+	int __stdcall clpconf_add_ip(IN char *srvname, IN char *id, IN char *ipaddr);
 #ifdef __cplusplus
 }
 #endif
