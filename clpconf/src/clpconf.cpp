@@ -25,12 +25,12 @@ static void *g_hxml = NULL;
 static char g_charset[16];
 static char g_os[16];
 
-static int srvnum = 0;
-static int hbnum = 0;
-static int npnum = 0;
-static int grpnum = 0;
-static int rscnum = 0;
-static int monnum = 0;
+static int g_srvnum = 0;
+static int g_hbnum = 0;
+static int g_npnum = 0;
+static int g_grpnum = 0;
+static int g_rscnum = 0;
+static int g_monnum = 0;
 
 /**
 * clpconf_init
@@ -198,23 +198,39 @@ clpconf_save(
 	IMXWriter *wrt;
 	HRESULT hr;
 	char path[CONF_PATH_LEN];
+	char obj[CONF_PATH_LEN];
+	int objnum;
 	int nfuncret;
 
 	/* initialize */
 	nfuncret = CONF_ERR_SUCCESS;
-
 	xmldoc = (IXMLDOMDocument *)g_hxml;
 
-	/* set charset, serveros, encode */
+	/* calculate object number */
+	printf("g_srvnum: %d\n", g_srvnum);
+	printf("g_hbnum : %d\n", g_hbnum);
+	printf("g_npnum : %d\n", g_npnum);
+	printf("g_grpnum: %d\n", g_grpnum);
+	printf("g_rscnum: %d\n", g_rscnum);
+	printf("g_monnum: %d\n", g_monnum);
+	objnum = 4 
+			+ g_srvnum 
+			+ (g_srvnum * g_hbnum) 
+			+ (g_srvnum * g_npnum)
+			+ g_grpnum
+			+ g_rscnum
+			+ g_monnum;
+	printf("objnum  : %d\n", objnum);
+	itoa(objnum, obj, 10);
 	sprintf_s(path, CONF_PATH_LEN, "/root/webmgr/client/objectnumber");
-	nfuncret = set_value(g_hxml, path, CONF_CHAR, "10");
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, obj);
 	if (nfuncret)
 	{
 		printf("save_value() failed. (ret: %d)\n", nfuncret);
 		nfuncret = CONF_ERR_FILE;
 	}
 
-
+	/* set charset, serveros, encode */
 	try
 	{
 		/* 保存ファイルのクリエート */
@@ -381,7 +397,7 @@ clpconf_add_srv(
 		printf("save_value() failed. (ret: %d)\n", nfuncret);
 		nfuncret = CONF_ERR_FILE;
 	}
-
+	g_srvnum++;
 
 	return 0;
 }
@@ -461,6 +477,7 @@ clpconf_add_hb(
 		printf("save_value() failed. (ret: %d)\n", nfuncret);
 		nfuncret = CONF_ERR_FILE;
 	}
+	g_hbnum++;
 
 	return 0;
 }
