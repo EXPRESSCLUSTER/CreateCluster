@@ -552,7 +552,7 @@ clpconf_add_rsc(
 	nfuncret = CONF_ERR_SUCCESS;
 
 	/* add a resource to a group */
-	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/resource/%s@%s", grpname, rsctype, rscname);
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/resource@%s@%s", grpname, rsctype, rscname);
 	nfuncret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (nfuncret)
 	{

@@ -100,8 +100,27 @@ extern "C" {
 	 */
 	int __stdcall clpconf_add_grp(IN char *grptype, IN char *grpname);
 
-
+	/**
+	 * clpconf_add_grp
+	 *  purpose
+	 *   add a resource to a group
+	 *  argument
+	 *   grpname: group name (e.g. failover, ManagementGroup)
+	 *   rsctype: resource type (e.g. fip, disk, script)
+	 *   rscname: resource name (e.g. fip-192-168-1-199)
+	 */
 	int __stdcall clpconf_add_rsc(IN char *grpname, IN char *grsctype, IN char *rscname);
+
+	/**
+	 * clpconf_add_grp
+	 *  purpose
+	 *   add a parameter to a resource
+	 *  argument
+	 *   rsctype: resource type (e.g. fip, disk, script)
+	 *   rscname: resource name (e.g. fip-192-168-1-199)
+	 *   tag    : tag name (e.g. ip)
+	 *   param  : parameter for a resource (e.g. 192.168.1.199)
+	 */
 	int __stdcall clpconf_add_rsc_param(IN char *rsctype, IN char *rscname, IN char *tag, IN char *param);
 
 #ifdef __cplusplus

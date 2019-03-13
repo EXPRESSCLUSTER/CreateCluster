@@ -102,17 +102,15 @@ main(
 	nfuncret = clpconf_add_rsc("failover", "fip", "fip1");
 	if (nfuncret)
 	{
-		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		printf("clpconf_add_rsc() failed. (ret: %d)\n", nfuncret);
 		goto func_exit;
 	}
-	nfuncret = clpconf_add_rsc_param("fip", "fip1", "ip", "192.168.1.198");
+	nfuncret = clpconf_add_rsc_param("fip", "fip1", "ip", "192.168.1.199");
 	if (nfuncret)
 	{
-		printf("clpconf_add_ip() failed. (ret: %d)\n", nfuncret);
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
 		goto func_exit;
 	}
-
-
 
 	/* add monitor resource to cluster */
 
