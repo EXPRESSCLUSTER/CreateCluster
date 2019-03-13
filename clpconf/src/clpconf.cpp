@@ -41,7 +41,8 @@ static int g_monnum = 0;
 int __stdcall
 clpconf_init(
 	IN char *lang,
-	IN char *os
+	IN char *os,
+	IN char *type
 )
 {
 	HRESULT hr;
@@ -321,7 +322,7 @@ func_exit:
  */
 int __stdcall
 clpconf_add_cls(
-	IN char *name
+	IN char *clsname
 )
 {
 	char path[CONF_PATH_LEN];
@@ -355,7 +356,7 @@ clpconf_add_cls(
 
 	/* set cluster name, comment */
 	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/name");
-	nfuncret = set_value(g_hxml, path, CONF_CHAR, name);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, clsname);
 	if (nfuncret)
 	{
 		printf("save_value() failed. (ret: %d)\n", nfuncret);
@@ -479,7 +480,7 @@ clpconf_add_hb(
 	}
 	g_hbnum++;
 
-	return 0;
+	return nfuncret;
 }
 
 
@@ -507,7 +508,30 @@ clpconf_add_grp(
 	IN char *grpname
 )
 {
-	return 0;
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/type", grpname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, grptype);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/comment", grpname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	g_grpnum++;
+
+	return nfuncret;
 }
 
 
@@ -516,13 +540,44 @@ clpconf_add_grp(
  */
 int __stdcall
 clpconf_add_rsc(
-	IN char *grptype,
 	IN char *grpname,
 	IN char *rsctype,
 	IN char *rscname
 )
 {
-	return 0;
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/resource/%s@%s", grpname, rsctype, rscname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	/* add a resource to a cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/types@%s", rsctype);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/comment", rsctype, rscname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	g_rscnum++;
+
+	return nfuncret;
 }
 
 
@@ -533,11 +588,26 @@ int __stdcall
 clpconf_add_rsc_param(
 	IN char *rsctype,
 	IN char *rscname,
-	IN char *path,
+	IN char *tag,
 	IN char *param
 )
 {
-	return 0;
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/parameters/%s", rsctype, rscname, tag);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	return nfuncret;
 }
 
 
