@@ -26,7 +26,7 @@ main(
 		printf("clpconf_init() failed. (ret: %d)\n", nfuncret);
 	}
 
-	/* add cluster */
+	/* add a cluster */
 	nfuncret = clpconf_add_cls("cluster");
 	if (nfuncret)
 	{
@@ -34,7 +34,7 @@ main(
 		goto func_exit;
 	}
 
-	/* add server to cluster */
+	/* add a server to a cluster */
 	nfuncret = clpconf_add_srv("ws2016-197", "0");
 	if (nfuncret)
 	{
@@ -48,7 +48,7 @@ main(
 		goto func_exit;
 	}
 
-	/* add IP address to server */
+	/* add an IP address to a server */
 	nfuncret = clpconf_add_ip("ws2016-197", "0", "192.168.0.197");
 	if (nfuncret)
 	{
@@ -88,9 +88,10 @@ main(
 		goto func_exit;
 	}
 
-	/* add NP resource */
+	/* add a NP resource */
 
-	/* add failover group to cluster */
+
+	/* add a failover group to a cluster */
 	nfuncret = clpconf_add_grp("failover", "failover");
 	if (nfuncret)
 	{
@@ -99,22 +100,73 @@ main(
 	}
 
 	/* add a resource to a cluster */
-	nfuncret = clpconf_add_rsc("failover", "fip", "fip1");
+	nfuncret = clpconf_add_rsc("failover", "fip", "fip");
 	if (nfuncret)
 	{
 		printf("clpconf_add_rsc() failed. (ret: %d)\n", nfuncret);
 		goto func_exit;
 	}
-	nfuncret = clpconf_add_rsc_param("fip", "fip1", "ip", "192.168.1.199");
+	nfuncret = clpconf_add_rsc_param("fip", "fip", "ip", "192.168.1.199");
 	if (nfuncret)
 	{
 		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
 		goto func_exit;
 	}
 
-	/* add monitor resource to cluster */
+	/* add a monitor resource to a cluster */
+	nfuncret = clpconf_add_mon("userw", "userw");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("userw", "userw", "target", "");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("userw", "userw", "relation/type", "cls");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("userw", "userw", "relation/name", "LocalServer");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
 
-	/* save cluster configuration */
+	nfuncret = clpconf_add_mon("fipw", "fipw");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("fipw", "fipw", "target", "fip");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("fipw", "fipw", "relation/type", "rsc");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+	nfuncret = clpconf_add_mon_param("fipw", "fipw", "relation/name", "fip");
+	if (nfuncret)
+	{
+		printf("clpconf_add_rsc_param() failed. (ret: %d)\n", nfuncret);
+		goto func_exit;
+	}
+
+
+
+	/* save a cluster configuration */
 	nfuncret = clpconf_save();
 	if (nfuncret)
 	{

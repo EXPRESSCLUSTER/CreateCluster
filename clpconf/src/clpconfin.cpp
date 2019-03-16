@@ -59,7 +59,7 @@ create_file(
 		goto func_exit;
 	}
 #endif
-	fprintf(fp, "<root>\n</root>\n");
+	fprintf(fp, "<root>\n</root>\n\n");
 	fclose(fp);
 
 func_exit:

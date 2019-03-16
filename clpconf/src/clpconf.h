@@ -123,6 +123,9 @@ extern "C" {
 	 */
 	int __stdcall clpconf_add_rsc_param(IN char *rsctype, IN char *rscname, IN char *tag, IN char *param);
 
+	int __stdcall clpconf_add_mon(IN char *montype, IN char *monname);
+	int __stdcall clpconf_add_mon_param(IN char *montype, IN char *monname, IN char *tag, IN char *param);
+
 #ifdef __cplusplus
 }
 #endif

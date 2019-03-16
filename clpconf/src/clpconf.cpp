@@ -620,7 +620,32 @@ clpconf_add_mon(
 	IN char *monname
 )
 {
-	return 0;
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/types@%s", montype);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	/* add a resource to a cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/comment", montype, monname);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+	g_monnum++;
+
+	return nfuncret;
 }
 
 
@@ -631,11 +656,26 @@ int __stdcall
 clpconf_add_mon_param(
 	IN char *montype,
 	IN char *monname,
-	IN char *path,
+	IN char *tag,
 	IN char *param
 )
 {
-	return 0;
+	char path[CONF_PATH_LEN];
+	int nfuncret;
+
+	/* initialize */
+	nfuncret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/%s", montype, monname, tag);
+	nfuncret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (nfuncret)
+	{
+		printf("save_value() failed. (ret: %d)\n", nfuncret);
+		nfuncret = CONF_ERR_FILE;
+	}
+
+	return nfuncret;
 }
 
 
