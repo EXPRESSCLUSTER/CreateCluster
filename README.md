@@ -16,5 +16,5 @@
 - Tohru Hashimoto
 - Futoshi Takeda
 - Koji Yasui
-- (Taira Takemoto)[https://github.com/tairametal]
-- (Kazuyuki Miyamoto)[https://github.com/mkazuyuki]
+- [Taira Takemoto](https://github.com/tairametal)
+- [Kazuyuki Miyamoto](https://github.com/mkazuyuki)
