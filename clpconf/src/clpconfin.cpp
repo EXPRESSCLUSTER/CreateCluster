@@ -38,28 +38,7 @@ create_file(
 		nfuncret = CONF_ERR_FILE;
 		goto func_exit;
 	}
-#if 0
-	/* insert XML declaration */
-	if (!strcmp(lang, "jp"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"SJIS\"?>\n");
-	}
-	else if (!strcmp(lang, "cn"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"GB2321\"?>\n");
-	}
-	else if (!strcmp(lang, "en"))
-	{
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n");
-	}
-	else
-	{
-		printf("Invalid lang (jp, en, cn are available only).\n");
-		nfuncret = CONF_ERR_FILE;
-		goto func_exit;
-	}
-#endif
-	fprintf(fp, "<root>\n</root>\n\n");
+	fprintf(fp, "<root>\n</root>\n");
 	fclose(fp);
 
 func_exit:

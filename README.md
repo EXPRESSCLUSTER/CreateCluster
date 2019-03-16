@@ -13,5 +13,8 @@
 ## Special Thanks
 - Katsutoshi Hiroshige
 - Noriki Morikata
-- Taira Takemoto
-- Kazuyuki Miyamoto
+- Tohru Hashimoto
+- Futoshi Takeda
+- Koji Yasui
+- (Taira Takemoto)[https://github.com/tairametal]
+- (Kazuyuki Miyamoto)[https://github.com/mkazuyuki]

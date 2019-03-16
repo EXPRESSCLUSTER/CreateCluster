@@ -1,7 +1,7 @@
 /**
  * header file for exteral functions
  */
-enum __ohaexml_func_retval__
+enum _func_retval__
 {
 	CONF_ERR_SUCCESS,
 	CONF_ERR_FILE,
@@ -11,9 +11,9 @@ enum __ohaexml_func_retval__
 	CONF_ERR_OTHER
 };
 
-#define CONF_PATH_LEN			1024
-#define CONF_CHAR				0
-#define CONF_INT				1
+#define CONF_PATH_LEN	1024
+#define CONF_CHAR		0
+#define CONF_INT		1
 
 /* prototype */
 #ifdef __cplusplus
@@ -101,7 +101,7 @@ extern "C" {
 	int __stdcall clpconf_add_grp(IN char *grptype, IN char *grpname);
 
 	/**
-	 * clpconf_add_grp
+	 * clpconf_add_rsc
 	 *  purpose
 	 *   add a resource to a group
 	 *  argument
@@ -112,7 +112,7 @@ extern "C" {
 	int __stdcall clpconf_add_rsc(IN char *grpname, IN char *grsctype, IN char *rscname);
 
 	/**
-	 * clpconf_add_grp
+	 * clpconf_add_rsc_param
 	 *  purpose
 	 *   add a parameter to a resource
 	 *  argument
