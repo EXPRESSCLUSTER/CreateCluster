@@ -18,8 +18,6 @@ static char g_charset[16];
 
 
 /* prototype */
-int chkopt(int argc, char *argv[], PCMD_OPTION popt);
-int init(void);
 
 int
 main(
@@ -117,6 +115,29 @@ main(
 		{
 			add_cls(argv[3], argv[4], argv[5], argv[6]);
 		}
+		else if (!strcmp(argv[2], "srv"))
+		{
+			add_srv(argv[3], argv[4]);
+		}
+		else if (!strcmp(argv[2], "ip"))
+		{
+			add_ip(argv[3], argv[4], argv[5]);
+		}
+		else if (!strcmp(argv[2], "hb"))
+		{
+			add_hb(argv[3], argv[4]);
+		}
+		else if (!strcmp(argv[2], "grp"))
+		{
+			add_grp(argv[3], argv[4]);
+		}
+		else if (!strcmp(argv[2], "rsc"))
+		{
+			add_rsc(argv[3], argv[4], argv[5]);
+		}
+		else
+		{
+		}
 	}
 	else
 	{
@@ -211,61 +232,16 @@ func_exit:
 
 
 int
-chkopt(
-	int argc, 
-	char *argv[], 
-	PCMD_OPTION popt
-)
-{
-	int i;
-	int	ret;
-
-	CMD_OPTION cmdopt;
-
-	/* initialize */
-	ret = 0;
-
-#if 0
-	for (i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "init"))
-		{
-			printf("initialize\n");
-			popt->option = CONF_INIT;
-		}
-		else if (!strcmp(argv[i], "add"))
-		{ 
-			printf("add\n");
-		}
-	}
-#endif
-	if (!strcmp(argv[1], "init"))
-	{
-		printf("init\n");
-		init();
-
-	}
-	else if (!strcmp(argv[1], "add"))
-	{
-		printf("add\n");
-	}
-	else
-	{
-		printf("invalid\n");
-	}
-
-	return ret;
-}
-
-int
 init
 (
-	IN void
+	void
 )
 {
 	create_file();
 
 	return 0;
 }
+
 
 int
 add_cls
@@ -280,11 +256,6 @@ add_cls
 	int ret;
 
 	ret = 0;
-
-	printf("%s\n", clsname);
-	printf("%s\n", lang);
-	printf("%s\n", os);
-	printf("%s\n", type);
 
 	strcpy(g_charset, lang);
 	sprintf_s(path, CONF_PATH_LEN, "/root/all/charset");
@@ -333,3 +304,182 @@ add_cls
 func_exit:
 	return 0;
 }
+
+
+int
+add_srv
+(
+	IN char *srvname,
+	IN char *priority
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	ret = 0;
+
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/priority", srvname);
+	ret = set_value(g_hxml, path, CONF_CHAR, priority);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+func_exit:
+	return ret;
+}
+
+
+int
+add_ip(
+	IN char *srvname,
+	IN char *id,
+	IN char *ipaddr
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	ret = 0;
+
+	/* set charset, serveros, encode */
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/type", srvname, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "lan");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/info", srvname, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, ipaddr);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+func_exit:
+	return ret;
+
+
+	return 0;
+}
+
+
+int
+add_hb(
+	IN char *priority,
+	IN char *id
+)
+{
+	char path[CONF_PATH_LEN];
+	int khbenum = 0;
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* set heartbeat to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/types@lankhb");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	khbenum = atoi(priority);
+	khbenum++;
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/lankhb@lankhb%d/priority", khbenum);
+	ret = set_value(g_hxml, path, CONF_CHAR, priority);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/lankhb@lankhb%d/device", khbenum);
+	ret = set_value(g_hxml, path, CONF_CHAR, id);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+int
+add_grp(
+	IN char *grptype,
+	IN char *grpname
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/type", grpname);
+	ret = set_value(g_hxml, path, CONF_CHAR, grptype);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/comment", grpname);
+	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+int
+add_rsc(
+	IN char *grpname,
+	IN char *rsctype,
+	IN char *rscname
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/resource@%s@%s", grpname, rsctype, rscname);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	/* add a resource to a cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/types@%s", rsctype);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/comment", rsctype, rscname);
+	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+

@@ -3,12 +3,10 @@
 
 ## clpconf
 - This is a DLL (clpconf.dll) to provide APIs to create a cluster. For details of APIs, please refer to [clpconf.h](https://github.com/EXPRESSCLUSTER/CreateCluster/blob/master/clpconf/src/clpconf.h).
+- There some sample code in sample-*** directories.
 
 ## clpcreate
-- This is a command (clpcreate.exe) to create a cluster.
-
-## Sample Code
-- There some sample code in sample-*** directories.
+- This is a command (clpcreate.exe) to create a cluster. For command line, please refer to CheateSheet.md.
 
 ## Special Thanks
 - Katsutoshi Hiroshige

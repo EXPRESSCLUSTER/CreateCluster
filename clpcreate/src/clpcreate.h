@@ -4,12 +4,9 @@
  * - initialize
  *   C:\> clpcreate.exe init
  *
- * - terminate
- *   C:\> clpcreate.exe term
- *
  * - add a cluster
  *   C:\> clpcreate.exe add cls <cluster name> <lang> <os> <type>
- *   e.g. C:\> clpcreate.exe add cls mycluster jp windows 1
+ *   e.g. C:\> clpcreate.exe add cls mycluster SJIS windows 1
  *
  * - add a server to a cluster
  *   C:\> clpcreate.exe add srv <server name> <priority>
@@ -23,12 +20,12 @@
  *
  * - add a resource to a group
  *   C:\> clpcreate.exe add rsc <group name> <resource type> <resource name>
- *   e.g. C:\> clpcreate.exe add failover1 fip fip1
+ *   e.g. C:\> clpcreate.exe add rsc failover1 fip fip1
  *
  * - add a parameter to a resource
  *   C:\> clpcreate.exe add rsc <resource type> <resource name> <tag> <param>
- *   e.g. C:\> clpcreate.exe add fip fip1 ip 192.168.1.9
- *        C:\> clpcreate.exe add service service_ora name OracleServiceSID 
+ *   e.g. C:\> clpcreate.exe add rscparam fip fip1 ip 192.168.1.9
+ *        C:\> clpcreate.exe add rscparam service service_ora name OracleServiceSID 
  *
  * - add a monitor to a cluster
  *   C:\> clpcreate.exe add mon <monitor type> <monitor name>
@@ -36,9 +33,9 @@
  *
  * - add a parameter to a monitor 
  *   C:\> clpcreate.exe add mon <monitor type> <monitor name> <tag> <param>
- *   e.g. C:\> clpcreate.exe add userw userw target none
- *        C:\> clpcreate.exe add userw userw relation/type cls
- *        C:\> clpcreate.exe add userw userw relation/name LocalServer
+ *   e.g. C:\> clpcreate.exe add monparam userw userw target none
+ *        C:\> clpcreate.exe add monparam userw userw relation/type cls
+ *        C:\> clpcreate.exe add monparam userw userw relation/name LocalServer
  *
  *        
  */
@@ -86,6 +83,10 @@ typedef struct _CMD_OPTION {
 
 
 
-int	ckopt(int argc, char *argv[], PCMD_OPTION);
 int init(void);
 int add_cls(IN char *clsname, IN char *lang, IN char *os, IN char *type);
+int add_srv(IN char *srvname, IN char *priority);
+int add_ip(IN char *srvname, IN char *id, IN char *ipaddr);
+int add_hb(IN char *priority, IN char *id);
+int add_grp(IN char *grptype, IN char *grpname);
+int add_rsc(IN char *grpname, IN char *rsctype, IN char *rscname);
