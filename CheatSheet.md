@@ -10,19 +10,18 @@
 ### add cls
 - Add a cluster to an initial configuration.
   ```bat
-  C:\> clpcreate.exe add cls <cluster name> <charactor code> <type>
+  C:\> clpcreate.exe add cls <cluster name> <charactor code> <os>
   
   Example:
-  C:\> clpcreate.exe add cls mycluster SJIS 1
+  C:\> clpcreate.exe add cls mycluster SJIS windows
   
   <charactor code>
   SJIS  : Japanese
   ASCII : English or other language
   GB2312: Chinese
 
-  <type>
-  FIXME
-  1:
+  <os>
+  windows (it is only available now)
   ```
 ### add srv
 - Add a server to a cluster.
@@ -139,6 +138,24 @@
 
   ```
 
+### add objnum
+- Set object number.
+  ```bat
+  C:\> clpcreate.exe add objnum <object number>
+
+  Example:
+  C:\> clpcreate.exe add objnum 14
+  ```
+  - It is needed to calculate object number as below. This number should be calculated automatically but it is NOT implemented yet.
+    ```
+    object number = servers
+                  + (servers * heartbeat)
+                  + (servers * NP resources)
+                  + groups
+                  + resources
+                  + monitors
+                  + 4
+    ```
 ## Samples
 ### Oracle, SAN
 
