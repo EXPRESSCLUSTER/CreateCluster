@@ -113,7 +113,7 @@ main(
 		printf("add\n");
 		if (!strcmp(argv[2], "cls"))
 		{
-			add_cls(argv[3], argv[4], argv[5], argv[6]);
+			add_cls(argv[3], argv[4], argv[5]);
 		}
 		else if (!strcmp(argv[2], "srv"))
 		{
@@ -134,6 +134,10 @@ main(
 		else if (!strcmp(argv[2], "rsc"))
 		{
 			add_rsc(argv[3], argv[4], argv[5]);
+		}
+		else if (!strcmp(argv[2], "rscdep"))
+		{
+			add_rsc_dep(argv[3], argv[4], argv[5]);
 		}
 		else if (!strcmp(argv[2], "rscparam"))
 		{
@@ -189,6 +193,8 @@ main(
 
 		wrt->put_version(_bstr_t("1.0"));
 //		wrt->put_encoding(_bstr_t(g_charset));
+		/* TODO: need to check charset and change encode */
+		wrt->put_encoding(_bstr_t("SJIS"));
 		wrt->put_indent(VARIANT_TRUE);
 		wrt->put_output(_variant_t((IUnknown*)(IUnknownPtr)stmfile));
 
@@ -264,7 +270,7 @@ add_cls
 (
 	IN char *clsname,
 	IN char *lang,
-	IN char *os,
+	IN char *os
 )
 {
 	char path[CONF_PATH_LEN];
@@ -500,6 +506,32 @@ add_rsc(
 
 
 int
+add_rsc_dep(
+	IN char *rsctype,
+	IN char *rscname,
+	IN char *depend
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/depend@%s", rsctype, rscname, depend);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+int
 add_rsc_param(
 	IN char *rsctype,
 	IN char *rscname,
@@ -526,8 +558,9 @@ add_rsc_param(
 }
 
 
+
 /**
- * clpconf_add_mon
+ * add_mon
  */
 int
 add_mon(

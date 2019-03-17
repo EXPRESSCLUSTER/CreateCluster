@@ -83,13 +83,29 @@
   C:\> clpcreate.exe add rsc failover1 fip fip1
   ```
 
+### add rscdep
+- Add dependencies to a resource.
+  ```bat
+  C:\> clpcreate.exe add rscdep <resource type> <resource name #1> <resource name #2>
+
+  Example:
+   script1 depends on fip1.
+   C:\> clpcreate.exe add rscdep script script1 fip1
+
+   script1 depends on fip1 and sd1.
+   C:\> clpcreate.exe add rscdep script script1 fip1
+   C:\> clpcreate.exe add rscdep script script1 sd1
+  ```
+
 ### add rscparam
 - Add a parameter to a resource.
   ```bat
   C:\> clpcreate.exe add rscparam <resource type> <resource name> <tag> <parameter>
   
   Example:
-  C:\> clpcreate.exe add rscparam fip fip1 ip 192.168.1.9
+   Set floating IP address
+   C:\> clpcreate.exe add rscparam fip fip1 ip 192.168.1.9
+
   ```
 
 ### add mon
