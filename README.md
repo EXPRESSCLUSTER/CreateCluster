@@ -6,7 +6,7 @@
 - There some sample code in sample-*** directories.
 
 ## clpcreate
-- This is a command (clpcreate.exe) to create a cluster. For command line, please refer to CheateSheet.md.
+- This is a command (clpcreate.exe) to create a cluster. For command line, please refer to [CheateSheet](https://github.com/EXPRESSCLUSTER/CreateCluster/blob/develop/CheatSheet.md).
 
 ## Special Thanks
 - Katsutoshi Hiroshige

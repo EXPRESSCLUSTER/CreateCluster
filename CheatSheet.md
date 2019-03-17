@@ -51,6 +51,15 @@
   Zero-based indexing.
   ```
 ### add hb
+- Add a heartbeat interface to a cluster.
+  ```bat
+  C:\> clpcreate.exe add hb <id> <priority>
+
+  Example:
+  C:\> clpcreate.exe add hb 0 0
+  C:\> clpcreate.exe add hb 1 1
+  ```
+### add np
 - FIXME
 ### add grp
 - Add a group to a cluster.
@@ -75,13 +84,46 @@
   ```
 
 ### add rscparam
-- FIXME
+- Add a parameter to a resource.
+  ```bat
+  C:\> clpcreate.exe add rscparam <resource type> <resource name> <tag> <parameter>
+  
+  Example:
+  C:\> clpcreate.exe add rscparam fip fip1 ip 192.168.1.9
+  ```
 
 ### add mon
+- Add a monitor to a cluster.
+  ```bat
+  C:\> clpcreate.exe add mon <monitor type> <monitor name>
+  
+  Example:
+  C:\> clpcreate.exe add mon fipw fipw1
+  C:\> clpcreate.exe add mon oraclew oraclew1
+  C:\> clpcreate.exe add mon sqlserverw sqlserverw1
+  ```
 
 ### add monparam
-- FIXME
+- Add a parameter to a monitor.
+  ```bat
+  C:\> clpcreate.exe add monparam <monitor type> <monitor name> <tag> <parameter>
+  
+  Example:
+   Monitor timing
+    Always
+      C:\> clpcreate.exe add monparam fipw fipw1 target none
+    Active
+      C:\> clpcreate.exe add monparam fipw fipw1 target fip1
+
+   Recovery action
+    Restart resource (e.g. fip1)
+      C:\> clpcreate.exe add monparam fipw fipw1 relation/type rsc
+      C:\> clpcreate.exe add monparam fipw fipw1 relation/name fip1
+    Restart resource
+
+  ```
 
 ## Samples
 ### Oracle, SAN
+
 ### SQL Server, SAN

@@ -135,6 +135,22 @@ main(
 		{
 			add_rsc(argv[3], argv[4], argv[5]);
 		}
+		else if (!strcmp(argv[2], "rscparam"))
+		{
+			add_rsc_param(argv[3], argv[4], argv[5], argv[6]);
+		}
+		else if (!strcmp(argv[2], "mon"))
+		{
+			add_mon(argv[3], argv[4]);
+		}
+		else if (!strcmp(argv[2], "monparam"))
+		{
+			add_mon_param(argv[3], argv[4], argv[5], argv[6]);
+		}
+		else if (!strcmp(argv[2], "objnum"))
+		{
+			add_obj_num(argv[3]);
+		}
 		else
 		{
 		}
@@ -249,7 +265,6 @@ add_cls
 	IN char *clsname,
 	IN char *lang,
 	IN char *os,
-	IN char *type
 )
 {
 	char path[CONF_PATH_LEN];
@@ -370,8 +385,8 @@ func_exit:
 
 int
 add_hb(
-	IN char *priority,
-	IN char *id
+	IN char *id,
+	IN char *priority
 )
 {
 	char path[CONF_PATH_LEN];
@@ -483,3 +498,118 @@ add_rsc(
 	return ret;
 }
 
+
+int
+add_rsc_param(
+	IN char *rsctype,
+	IN char *rscname,
+	IN char *tag,
+	IN char *param
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/parameters/%s", rsctype, rscname, tag);
+	ret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+/**
+ * clpconf_add_mon
+ */
+int
+add_mon(
+	IN char *montype,
+	IN char *monname
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/types@%s", montype);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	/* add a resource to a cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/comment", montype, monname);
+	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+/**
+ * clpconf_add_mon_param
+ */
+int
+add_mon_param(
+	IN char *montype,
+	IN char *monname,
+	IN char *tag,
+	IN char *param
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/%s", montype, monname, tag);
+	ret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+int add_obj_num(
+	IN char *objnum
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/webmgr/client/objectnumber");
+	ret = set_value(g_hxml, path, CONF_CHAR, objnum);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return 0;
+}
