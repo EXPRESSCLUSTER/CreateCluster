@@ -361,7 +361,7 @@ find_child_node(
 				}
 
 				hr = child_elem->getAttribute(
-					_bstr_t(strcmp(element, "device") == 0 ? "id" : "name"), &attr);
+					_bstr_t((strcmp(element, "device") == 0 || strcmp(element, "list") == 0) ? "id" : "name"), &attr);
 
 				/* アトリビュートをチェック */
 				if (hr != S_OK)
@@ -476,7 +476,7 @@ make_child_node(
 			var.bstrVal = SysAllocString(wattribute);
 
 			hr = child_elem->setAttribute(
-				_bstr_t(strcmp(element, "device") == 0 ? "id" : "name"), var);
+				_bstr_t((strcmp(element, "device") == 0 || strcmp(element, "list") == 0) ? "id" : "name"), var);
 
 			if (hr != S_OK)
 			{

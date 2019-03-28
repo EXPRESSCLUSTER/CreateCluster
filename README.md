@@ -12,6 +12,7 @@
 - Katsutoshi Hiroshige
 - Noriki Morikata
 - Tohru Hashimoto
+- Shinzo Yamada
 - Futoshi Takeda
 - Koji Yasui
 - [Taira Takemoto](https://github.com/tairametal)

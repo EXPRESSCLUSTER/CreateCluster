@@ -625,6 +625,7 @@ add_mon_param(
 	return ret;
 }
 
+
 int add_obj_num(
 	IN char *objnum
 )
