@@ -87,12 +87,14 @@ typedef struct _CMD_OPTION {
 int init(void);
 int add_cls(IN char *clsname, IN char *lang, IN char *os);
 int add_srv(IN char *srvname, IN char *priority);
+int add_hba(IN char* srvname, IN char* id, IN char* tag, IN char* param);
 int add_ip(IN char *srvname, IN char *id, IN char *ipaddr);
 int add_hb(IN char *id, IN char *priority);
 int add_grp(IN char *grptype, IN char *grpname);
 int add_rsc(IN char *grpname, IN char *rsctype, IN char *rscname);
 int add_rsc_dep(IN char *rsctype, IN char *rscname, IN char *depend);
 int add_rsc_param(IN char *rsctype, IN char *rscname, IN char *tag, IN char *param);
+int add_rsc_guid(IN char* rsctype, IN char* rscname, IN char* srvname, IN char* tag, IN char* guid);
 int add_mon(IN char *montype, IN char *monname);
 int add_mon_param(IN char *montype, IN char *monname, IN char *tag, IN char *param);
 int add_obj_num(IN char *objnum);

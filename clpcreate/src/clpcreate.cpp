@@ -119,6 +119,10 @@ main(
 		{
 			add_srv(argv[3], argv[4]);
 		}
+		else if (!strcmp(argv[2], "hba"))
+		{
+			add_hba(argv[3], argv[4], argv[5], argv[6]);
+		}
 		else if (!strcmp(argv[2], "ip"))
 		{
 			add_ip(argv[3], argv[4], argv[5]);
@@ -142,6 +146,10 @@ main(
 		else if (!strcmp(argv[2], "rscparam"))
 		{
 			add_rsc_param(argv[3], argv[4], argv[5], argv[6]);
+		}
+		else if (!strcmp(argv[2], "rscguid"))
+		{
+			add_rsc_guid(argv[3], argv[4], argv[5], argv[6], argv[7]);
 		}
 		else if (!strcmp(argv[2], "mon"))
 		{
@@ -353,6 +361,34 @@ func_exit:
 }
 
 
+int add_hba(
+	IN char* srvname, 
+	IN char* id,
+	IN char* tag, 
+	IN char* param
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add a resource to a group */
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/hba@%s/%s", srvname, id, tag);
+	ret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+
+	return 0;
+}
+
+
 int
 add_ip(
 	IN char *srvname,
@@ -557,6 +593,33 @@ add_rsc_param(
 	return ret;
 }
 
+
+int
+add_rsc_guid(
+	IN char* rsctype,
+	IN char* rscname,
+	IN char* srvname,
+	IN char* tag,
+	IN char* guid
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* add group to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/server@%s/parameters/%s", rsctype, rscname, srvname, tag);
+	ret = set_value(g_hxml, path, CONF_CHAR, guid);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
 
 
 /**

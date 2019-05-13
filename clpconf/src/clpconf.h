@@ -67,6 +67,8 @@ extern "C" {
 	 */
 	int __stdcall clpconf_add_srv(IN char *srvname, IN char *priority);
 
+//	int __stdcall clpconf_add_srv_param(IN char *srvname, IN char* tag, IN char* param);
+
 	/**
 	 * clpconf_add_ip
 	 *  purpose
