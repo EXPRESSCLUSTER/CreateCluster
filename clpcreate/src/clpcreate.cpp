@@ -131,6 +131,10 @@ main(
 		{
 			add_hb(argv[3], argv[4]);
 		}
+		else if (!strcmp(argv[2], "diskhb"))
+		{
+			add_diskhb(argv[3], argv[4], argv[5], argv[6], argv[7]);
+		}
 		else if (!strcmp(argv[2], "grp"))
 		{
 			add_grp(argv[3], argv[4]);
@@ -158,6 +162,10 @@ main(
 		else if (!strcmp(argv[2], "monparam"))
 		{
 			add_mon_param(argv[3], argv[4], argv[5], argv[6]);
+		}
+		else if (!strcmp(argv[2], "np"))
+		{
+			add_np(argv[3], argv[4], argv[5], argv[6]);
 		}
 		else if (!strcmp(argv[2], "objnum"))
 		{
@@ -287,12 +295,6 @@ add_cls
 	ret = 0;
 
 	strcpy(g_charset, lang);
-	sprintf_s(path, CONF_PATH_LEN, "/root/all/charset");
-	ret = set_value(g_hxml, path, CONF_CHAR, lang);
-	if (ret)
-	{
-		goto func_exit;
-	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/all/charset");
 	ret = set_value(g_hxml, path, CONF_CHAR, lang);
 	if (ret)
@@ -457,6 +459,93 @@ add_hb(
 	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/lankhb@lankhb%d/device", khbenum);
 	ret = set_value(g_hxml, path, CONF_CHAR, id);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+int
+add_diskhb(
+	IN char* id,
+	IN char* priority,
+	IN char* dev,
+	IN char* srv1,
+	IN char* srv2
+)
+{
+	char path[CONF_PATH_LEN];
+	int khbenum = 0;
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* set heartbeat to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/types@diskhb");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	khbenum = atoi(id) - 300;
+	khbenum++;
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/diskhb@diskhb%d/priority", khbenum);
+	ret = set_value(g_hxml, path, CONF_CHAR, priority);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/heartbeat/diskhb@diskhb%d/device", khbenum);
+	ret = set_value(g_hxml, path, CONF_CHAR, id);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/type", srv1, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "disk");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/info", srv1, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, dev);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/info", srv1, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, dev);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/type", srv2, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "disk");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/info", srv2, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, dev);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/info", srv2, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, dev);
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -679,6 +768,85 @@ add_mon_param(
 	/* add a resource to a group */
 	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/%s", montype, monname, tag);
 	ret = set_value(g_hxml, path, CONF_CHAR, param);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+
+	return ret;
+}
+
+
+/**
+ * clpconf_add_np
+ */
+int
+add_np(
+	IN char* id,
+	IN char* ip,
+	IN char* srv1,
+	IN char* srv2
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	/* initialize */
+	ret = CONF_ERR_SUCCESS;
+
+	/* set np resource to cluster */
+	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/types@pingnp");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/pingnp@pingnp1/priority");
+	ret = set_value(g_hxml, path, CONF_CHAR, "0");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/pingnp@pingnp1/device");
+	ret = set_value(g_hxml, path, CONF_CHAR, "10200");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/pingnp@pingnp1/grp@0/list@%s/ip", id);
+	ret = set_value(g_hxml, path, CONF_CHAR, ip);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@10200/type", srv1);
+	ret = set_value(g_hxml, path, CONF_CHAR, "ping");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@10200/info", srv1);
+	ret = set_value(g_hxml, path, CONF_CHAR, "1");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@10200/type", srv2);
+	ret = set_value(g_hxml, path, CONF_CHAR, "ping");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@10200/info", srv2);
+	ret = set_value(g_hxml, path, CONF_CHAR, "1");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
