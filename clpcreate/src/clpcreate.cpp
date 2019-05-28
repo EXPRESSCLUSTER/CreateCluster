@@ -171,6 +171,10 @@ main(
 		{
 			add_obj_num(argv[3]);
 		}
+		else if (!strcmp(argv[2], "encode"))
+		{
+			add_encode(argv[3]);
+		}
 		else
 		{
 		}
@@ -208,9 +212,8 @@ main(
 		}
 
 		wrt->put_version(_bstr_t("1.0"));
-//		wrt->put_encoding(_bstr_t(g_charset));
+		wrt->put_encoding(_bstr_t(g_charset));
 		/* TODO: need to check charset and change encode */
-		wrt->put_encoding(_bstr_t("SJIS"));
 		wrt->put_indent(VARIANT_TRUE);
 		wrt->put_output(_variant_t((IUnknown*)(IUnknownPtr)stmfile));
 
@@ -325,7 +328,7 @@ add_cls
 		ret = CONF_ERR_FILE;
 	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/cluster/comment");
-	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -523,8 +526,22 @@ add_diskhb(
 		printf("save_value() failed. (ret: %d)\n", ret);
 		ret = CONF_ERR_FILE;
 	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/extend", srv1, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/info", srv1, id);
 	ret = set_value(g_hxml, path, CONF_CHAR, dev);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/extend", srv1, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -544,8 +561,22 @@ add_diskhb(
 		printf("save_value() failed. (ret: %d)\n", ret);
 		ret = CONF_ERR_FILE;
 	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/extend", srv2, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/info", srv2, id);
 	ret = set_value(g_hxml, path, CONF_CHAR, dev);
+	if (ret)
+	{
+		printf("save_value() failed. (ret: %d)\n", ret);
+		ret = CONF_ERR_FILE;
+	}
+	sprintf_s(path, CONF_PATH_LEN, "/root/server@%s/device@%s/disk/extend", srv2, id);
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -577,7 +608,7 @@ add_grp(
 		ret = CONF_ERR_FILE;
 	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/group@%s/comment", grpname);
-	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -619,7 +650,7 @@ add_rsc(
 		ret = CONF_ERR_FILE;
 	}
 	sprintf_s(path, CONF_PATH_LEN, "/root/resource/%s@%s/comment", rsctype, rscname);
-	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -737,7 +768,7 @@ add_mon(
 
 	/* add a resource to a cluster */
 	sprintf_s(path, CONF_PATH_LEN, "/root/monitor/%s@%s/comment", montype, monname);
-	ret = set_value(g_hxml, path, CONF_CHAR, " ");
+	ret = set_value(g_hxml, path, CONF_CHAR, "");
 	if (ret)
 	{
 		printf("save_value() failed. (ret: %d)\n", ret);
@@ -876,5 +907,22 @@ int add_obj_num(
 		ret = CONF_ERR_FILE;
 	}
 
+	return 0;
+}
+
+int
+add_encode
+(
+	IN char* lang
+)
+{
+	char path[CONF_PATH_LEN];
+	int ret;
+
+	ret = 0;
+
+	strcpy(g_charset, lang);
+
+func_exit:
 	return 0;
 }

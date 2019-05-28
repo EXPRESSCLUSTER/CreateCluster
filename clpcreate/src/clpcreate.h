@@ -100,3 +100,4 @@ int add_mon(IN char *montype, IN char *monname);
 int add_mon_param(IN char *montype, IN char *monname, IN char *tag, IN char *param);
 int add_np(IN char *id, IN char *ip, IN char *srv1, IN char *srv2);
 int add_obj_num(IN char *objnum);
+int add_encode(IN char* encode);

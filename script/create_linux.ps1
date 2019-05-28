@@ -1,5 +1,5 @@
 ##################################################
-# set type for final action of monitor resources
+# Set type for final action of monitor resources
 # 0: use default final action (do nothing)
 # 1: ignore timeout
 # 2: initiate BSoD/panic immediately
@@ -7,26 +7,49 @@ $type = 1
 ##################################################
 
 ##################################################
-# set parameters
-$cluster = @{name = "cluster"; encode = "ASCII"; os = "linux"}
-$server1 = @{name = "server1"} <# master node #>
+# Set parameters
+
+# encode:
+#   Japanese -> EUC-JP, English -> ASCII
+# os:
+#   windows or linux
+$cluster = @{name = "cluster"; encode = "EUC-JP"; os = "linux"}
+
+# Server 1 is a master node
+$server1 = @{name = "server1"}
 $server2 = @{name = "server2"}
+
+# ip_srv1, 2 is used to send a heartbeat eachother.
+# ip_srv1 and ip_srv2 that have a same device_id are needed to be in a same network.
 $ip = @(@{ip_srv1 = "192.168.137.71"; ip_srv2 = "192.168.137.72"; device_id = "0"},
         @{ip_srv1 = "192.168.138.71"; ip_srv2 = "192.168.138.72"; device_id = "1"},
         @{ip_srv1 = "192.168.139.71"; ip_srv2 = "192.168.139.72"; device_id = "2"},
         @{ip_srv1 = "192.168.140.71"; ip_srv2 = "192.168.140.72"; device_id = "3"})
+
+# Heartbeat
 $hb = @(@{device_id = "0"; priority = "0"},
         @{device_id = "1"; priority = "1"},
         @{device_id = "2"; priority = "2"},
         @{device_id = "3"; priority = "3"})
+
+# Disk heartbeat
 $diskhb = @(@{device = "/dev/sdc1"; priority = "4"})
+
+# Network partition
+# If a server cannot reach all IP addresses, the server judges itself to be isolated from the network.
 $np = @(@{ip = "192.168.137.1"},
         @{ip = "192.168.137.100"})
+
+# Failover group
 $group = @(@{name = "failover"})
+
+# Group resource
 $resource = @(@{group = "failover"; type = "fip"; name = "fip1"; ip = "192.168.137.70"},
               @{group = "failover"; type = "disk"; name = "sd1"; disk_type = "lvm"; device = "/dev/ecxsd/sd1"; mount = "/mnt/sd1"; fs = "ext3"},
               @{group = "failover"; type = "volmgr"; name = "volmgr1"; volmgr_type = "lvm"; vg_name = "ecxsd"})
 $resource_dependency = @(@{depending_resource = "sd1"; depended_resource = "volmgr1"})
+
+# Monitor resource
 $monitor = @(@{type = "userw"; name = "userw"},
              @{type = "fipw"; name = "fipw1"; monitor_fip = "fip1"; recovery_target_type = "grp"; recovery_target_name = "failover"},
              @{type = "volmgrw"; name = "volmgrw1"; monitor_timing = "volmgr1"; monitor_vg = "ecxsd"; recovery_target_type = "grp"; recovery_target_name = "failover"},
@@ -171,3 +194,10 @@ for ($i = 0; $i -lt $monitor.Length; $i++) {
 $obj = 6  <# 1 cluster + 1 Servers + 1 Groups + 1 Monitors + 2 servers #>
 $obj = $obj + 2 * ($hb.Length + $diskhb.Length + 1) + $group.Length + $resource.Length + $monitor.Length
 .\clpcreate.exe add objnum $obj
+
+# set encode
+.\clpcreate.exe add encode $cluster["encode"]
+
+# convert CRLF to LF
+$filepath = ".\clp.conf"
+[text.encoding]::getencoding($cluster["encode"]).getbytes((get-content $filepath -encoding string) -join "`n")|set-content -encoding byte $filepath
