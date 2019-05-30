@@ -12,7 +12,7 @@ $type = 1
 # encode:
 #   Japanese -> EUC-JP, English -> ASCII
 # os:
-#   windows or linux
+#   linux only
 $cluster = @{name = "cluster"; encode = "EUC-JP"; os = "linux"}
 
 # Server 1 is a master node
@@ -37,7 +37,7 @@ $diskhb = @(@{device = "/dev/sdc1"; priority = "4"})
 
 # Network partition
 # If a server cannot reach all IP addresses, the server judges itself to be isolated from the network.
-$np = @(@{ip = "192.168.137.1"},
+$pingnp = @(@{ip = "192.168.137.1"},
         @{ip = "192.168.137.100"})
 
 # Failover group
@@ -95,9 +95,9 @@ for ($i = 0; $i -lt $diskhb.Length; $i++) {
 .\clpcreate.exe add diskhb 300 $diskhb[$i]["priority"] $diskhb[$i]["device"] $server1["name"] $server2["name"]
 }
 
-# add a NP resource to a cluster
-for ($i = 0; $i -lt $np.Length; $i++) {
-    .\clpcreate.exe add np $i $np[$i]["ip"] $server1["name"] $server2["name"]
+# add a ping NP resource to a cluster
+for ($i = 0; $i -lt $pingnp.Length; $i++) {
+    .\clpcreate.exe add pingnp $i "0" $pingnp[$i]["ip"] $server1["name"] $server2["name"]
 }
 
 # add a group to a cluster

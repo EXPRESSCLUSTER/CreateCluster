@@ -98,6 +98,7 @@ int add_rsc_param(IN char *rsctype, IN char *rscname, IN char *tag, IN char *par
 int add_rsc_guid(IN char* rsctype, IN char* rscname, IN char* srvname, IN char* tag, IN char* guid);
 int add_mon(IN char *montype, IN char *monname);
 int add_mon_param(IN char *montype, IN char *monname, IN char *tag, IN char *param);
-int add_np(IN char *id, IN char *ip, IN char *srv1, IN char *srv2);
+int add_pingnp(IN char *id, IN char *priority, IN char *ip, IN char *srv1, IN char *srv2);
+int add_disknp(IN char *id, IN char* priority, IN char *letter, IN char *srv1, IN char *srv2);
 int add_obj_num(IN char *objnum);
 int add_encode(IN char* encode);
