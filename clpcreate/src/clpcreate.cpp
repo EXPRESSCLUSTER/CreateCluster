@@ -169,7 +169,7 @@ main(
 		}
 		else if (!strcmp(argv[2], "disknp"))
 		{
-			add_pingnp(argv[3], argv[4], argv[5], argv[6], argv[7]);
+			add_disknp(argv[3], argv[4], argv[5], argv[6], argv[7]);
 		}
 		else if (!strcmp(argv[2], "objnum"))
 		{
@@ -926,7 +926,7 @@ add_disknp(
 		printf("save_value() failed. (ret: %d)\n", ret);
 		ret = CONF_ERR_FILE;
 	}
-	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/pingnp@pingnp1/device");
+	sprintf_s(path, CONF_PATH_LEN, "/root/networkpartition/disknp@disknp1/device");
 	ret = set_value(g_hxml, path, CONF_CHAR, "10100");
 	if (ret)
 	{

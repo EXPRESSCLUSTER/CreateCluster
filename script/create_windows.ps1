@@ -10,21 +10,21 @@ $type = 1
 # Set parameters
 
 # encode:
-#   Japanese -> EUC-JP, English -> ASCII
+#   Japanese -> SJIS, English -> ASCII
 # os:
-#   linux only
-$cluster = @{name = "cluster"; encode = "EUC-JP"; os = "linux"}
+#   windows only
+$cluster = @{name = "cluster"; encode = "ASCII"; os = "windows"}
 
 # Server 1 is a master node
-$server1 = @{name = "server1"}
-$server2 = @{name = "server2"}
+$server1 = @{name = "auto-vm1-2016"}
+$server2 = @{name = "auto-vm2-2016"}
 
 # ip_srv1, 2 is used to send a heartbeat eachother.
 # ip_srv1 and ip_srv2 that have a same device_id are needed to be in a same network.
-$ip = @(@{ip_srv1 = "192.168.137.71"; ip_srv2 = "192.168.137.72"; device_id = "0"},
-        @{ip_srv1 = "192.168.138.71"; ip_srv2 = "192.168.138.72"; device_id = "1"},
-        @{ip_srv1 = "192.168.139.71"; ip_srv2 = "192.168.139.72"; device_id = "2"},
-        @{ip_srv1 = "192.168.140.71"; ip_srv2 = "192.168.140.72"; device_id = "3"})
+$ip = @(@{ip_srv1 = "192.168.137.10"; ip_srv2 = "192.168.137.20"; device_id = "0"},
+        @{ip_srv1 = "192.168.138.10"; ip_srv2 = "192.168.138.20"; device_id = "1"},
+        @{ip_srv1 = "192.168.139.10"; ip_srv2 = "192.168.139.20"; device_id = "2"},
+        @{ip_srv1 = "192.168.140.10"; ip_srv2 = "192.168.140.20"; device_id = "3"})
 
 # Heartbeat
 $hb = @(@{device_id = "0"; priority = "0"},
@@ -32,30 +32,33 @@ $hb = @(@{device_id = "0"; priority = "0"},
         @{device_id = "2"; priority = "2"},
         @{device_id = "3"; priority = "3"})
 
-# Disk heartbeat
-$diskhb = @(@{device = "/dev/sdc1"; priority = "4"})
-
-# Network partition
+# Ping network partition
 # If a server cannot reach all IP addresses, the server judges itself to be isolated from the network.
-$pingnp = @(@{ip = "192.168.137.1"},
+$pingnp = @(@{ip = "192.168.137.75"},
         @{ip = "192.168.137.100"})
+
+# Disk network partition
+# Only one disknp can be set. 
+$disknp = @(@{drive_letter = "I"})
+
+# Setting of hba filter
+$hba = @(@{id = "0"; server = "auto-vm1-2016"; port = "3"; device_id = "ROOT\ISCSIPRT"; instance_id = "0000"},
+         @{id = "0"; server = "auto-vm2-2016"; port = "3"; device_id = "ROOT\ISCSIPRT"; instance_id = "0000"})
 
 # Failover group
 $group = @(@{name = "failover"})
 
 # Group resource
-$resource = @(@{group = "failover"; type = "fip"; name = "fip1"; ip = "192.168.137.70"},
-              @{group = "failover"; type = "disk"; name = "sd1"; disk_type = "lvm"; device = "/dev/ecxsd/sd1"; mount = "/mnt/sd1"; fs = "ext3"},
-              @{group = "failover"; type = "volmgr"; name = "volmgr1"; volmgr_type = "lvm"; vg_name = "ecxsd"},
-              @{group = "failover"; type = "exec"; name = "exec1"})
-$resource_dependency = @(@{depending_resource = "sd1"; depended_resource = "volmgr1"})
+$resource = @(@{group = "failover"; type = "fip"; name = "fip1"; ip = "192.168.137.30"},
+              @{group = "failover"; type = "sd"; name = "sd1"; drive_letter = "J"; guid = "47cf9225-880c-4925-8e13-6dd03a169cb4"},
+              @{group = "failover"; type = "script"; name = "script1"})
+$resource_dependency = @(@{depending_resource = "script1"; depended_resource = "sd1"})
 
 # Monitor resource
 $monitor = @(@{type = "userw"; name = "userw"},
              @{type = "fipw"; name = "fipw1"; monitor_fip = "fip1"; recovery_target_type = "grp"; recovery_target_name = "failover"},
-             @{type = "volmgrw"; name = "volmgrw1"; monitor_timing = "volmgr1"; monitor_vg = "ecxsd"; recovery_target_type = "grp"; recovery_target_name = "failover"},
-             @{type = "diskw"; name = "diskw1"; monitor_device = "/dev/sdc2"; recovery_target_type = "grp"; recovery_target_name = "failover"},
              @{type = "ipw"; name = "ipw1"; monitor_ip = "192.168.137.1"; recovery_target_type = "grp"; recovery_target_name = "failover"},
+             @{type = "sdw"; name = "sdw1"; monitor_sd = "sd1"; recovery_target_type = "grp"; recovery_target_name = "failover"},
              @{type = "genw"; name = "genw1"; recovery_target_type = "grp"; recovery_target_name = "failover"})
 ##################################################
 
@@ -92,14 +95,30 @@ for ($i = 0; $i -lt $hb.Length; $i++) {
     .\clpcreate.exe add hb $hb[$i]["device_id"] $hb[$i]["priority"]
 }
 
-# add a disk heartbeat interface to a cluster
-for ($i = 0; $i -lt $diskhb.Length; $i++) {
-.\clpcreate.exe add diskhb 300 $diskhb[$i]["priority"] $diskhb[$i]["device"] $server1["name"] $server2["name"]
+# add a ping NP resource to a cluster
+$pingnp_priority = -1
+if ($disknp.Length -eq 0) {
+    $pingnp_priority = 0
+} else {
+    $pingnp_priority = 1
+    for ($i = 0; $i -lt $disknp.Length; $i++) {
+        $disknp[$i]["drive_letter"] = $disknp[$i]["drive_letter"] + ":\"
+    }
+}
+for ($i = 0; $i -lt $pingnp.Length; $i++) {
+    .\clpcreate.exe add pingnp $i $pingnp_priority $pingnp[$i]["ip"] $server1["name"] $server2["name"]
 }
 
-# add a ping NP resource to a cluster
-for ($i = 0; $i -lt $pingnp.Length; $i++) {
-    .\clpcreate.exe add pingnp $i "0" $pingnp[$i]["ip"] $server1["name"] $server2["name"]
+# add a disk NP resource to a cluster
+for ($i = 0; $i -lt $disknp.Length; $i++) {
+    .\clpcreate.exe add disknp $i 0 $disknp[$i]["drive_letter"] $server1["name"] $server2["name"]
+}
+
+# set HBA filters
+for ($i = 0; $i -lt $hba.Length; $i++) {
+    .\clpcreate.exe add hba $hba[$i]["server"] $hba[$i]["id"] portnumber $hba[$i]["port"]
+    .\clpcreate.exe add hba $hba[$i]["server"] $hba[$i]["id"] deviceid $hba[$i]["device_id"]
+    .\clpcreate.exe add hba $hba[$i]["server"] $hba[$i]["id"] instanceid $hba[$i]["instance_id"]
 }
 
 # add a group to a cluster
@@ -112,20 +131,13 @@ for ($i = 0; $i -lt $resource.Length; $i++) {
     if ($resource[$i]["type"] -eq "fip") {
         .\clpcreate.exe add rsc $resource[$i]["group"] $resource[$i]["type"] $resource[$i]["name"]
         .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] ip $resource[$i]["ip"]
-    } elseif ($resource[$i]["type"] -eq "disk") {
+    } elseif ($resource[$i]["type"] -eq "sd") {
         .\clpcreate.exe add rsc $resource[$i]["group"] $resource[$i]["type"] $resource[$i]["name"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] disktype $resource[$i]["disk_type"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] device $resource[$i]["device"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] mount/point $resource[$i]["mount"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] fs $resource[$i]["fs"]
-    } elseif ($resource[$i]["type"] -eq "volmgr") {
+        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] volumemountpoint $resource[$i]["drive_letter"]
+        .\clpcreate.exe add rscguid $resource[$i]["type"] $resource[$i]["name"] $server1["name"] volumeguid $resource[$i]["guid"]
+        .\clpcreate.exe add rscguid $resource[$i]["type"] $resource[$i]["name"] $server2["name"] volumeguid $resource[$i]["guid"]
+    } elseif ($resource[$i]["type"] -eq "script") {
         .\clpcreate.exe add rsc $resource[$i]["group"] $resource[$i]["type"] $resource[$i]["name"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] type $resource[$i]["volmgr_type"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] devname $resource[$i]["vg_name"]
-    } elseif ($resource[$i]["type"] -eq "exec") {
-        .\clpcreate.exe add rsc $resource[$i]["group"] $resource[$i]["type"] $resource[$i]["name"]
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] act/path start.sh
-        .\clpcreate.exe add rscparam $resource[$i]["type"] $resource[$i]["name"] deact/path stop.sh
     } else {
         Write-Host "The resource type " + $resource[$i]["type"] + " does not exist."
         exit 0
@@ -152,26 +164,20 @@ for ($i = 0; $i -lt $monitor.Length; $i++) {
     if ($monitor[$i]["type"] -eq "userw") {
         .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] relation/type cls
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] relation/name LocalServer
+    .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] relation/name LocalServer
         continue
     } elseif ($monitor[$i]["type"] -eq "fipw") {
         .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] target $monitor[$i]["monitor_fip"]
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/monmii 1
-    } elseif ($monitor[$i]["type"] -eq "volmgrw") {
-        .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/devname $monitor[$i]["monitor_vg"]
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] target $monitor[$i]["monitor_timing"]
-    } elseif ($monitor[$i]["type"] -eq "diskw") {
-        .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/object $monitor[$i]["monitor_device"]
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/size 512
     } elseif ($monitor[$i]["type"] -eq "ipw") {
         .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/list@0/ip $monitor[$i]["monitor_ip"]
+    } elseif ($monitor[$i]["type"] -eq "sdw") {
+        .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
+        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/object $monitor[$i]["monitor_sd"]
     } elseif ($monitor[$i]["type"] -eq "genw") {
         .\clpcreate.exe add mon $monitor[$i]["type"] $monitor[$i]["name"]
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] parameters/path genw.sh
     } else {
         Write-Host "The monitor type " + $monitor[$i]["type"] + " does not exist."
         exit 0
@@ -195,19 +201,25 @@ for ($i = 0; $i -lt $monitor.Length; $i++) {
     {
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] relation/type cls
         .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] relation/name LocalServer
-        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] emergency/action 10
+        .\clpcreate.exe add monparam $monitor[$i]["type"] $monitor[$i]["name"] emergency/action 6
     }
 }
 
 # add object number
 $obj = 6  <# 1 cluster + 1 Servers + 1 Groups + 1 Monitors + 2 servers #>
 $pingnp_num = -1
+$disknp_num = -1
 if ($pingnp.Length -eq 0) {
     $pingnp_num = 0
 } else {
     $pingnp_num = 1
 }
-$obj = $obj + 2 * ($hb.Length + $diskhb.Length + $pingnp_num) + $group.Length + $resource.Length + $monitor.Length
+if ($disknp.Length -eq 0) {
+    $disknp_num = 0
+} else {
+    $disknp_num = 1
+}
+$obj = $obj + 2 * ($hb.Length + $pingnp_num + $disknp_num) + $group.Length + $resource.Length + $monitor.Length
 .\clpcreate.exe add objnum $obj
 
 # set encode
