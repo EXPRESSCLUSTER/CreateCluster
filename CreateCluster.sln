@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.73
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clpconf", "clpconf\clpconf.vcxproj", "{C1527A65-1C9C-4721-8874-11E592AE4C73}"
 EndProject
@@ -14,6 +14,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample-win-sd-ora", "sample-win-sd-ora\sample-win-sd-ora.vcxproj", "{22657A11-8655-44B0-A98C-5B88062A5581}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clpcreate", "clpcreate\clpcreate.vcxproj", "{68BE3499-A7EB-4735-B54F-F629858F05FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "script", "script", "{258989F8-A6AA-45B7-BE9E-F69DE4FA901A}"
+	ProjectSection(SolutionItems) = preProject
+		script\create_lin_sd_lvm.ps1 = script\create_lin_sd_lvm.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
