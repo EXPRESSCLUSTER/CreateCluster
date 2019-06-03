@@ -23,6 +23,7 @@
     <ProjectGuid>{22657A11-8655-44B0-A98C-5B88062A5581}</ProjectGuid>
     <RootNamespace>samplewinsdora</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>sample_code</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
