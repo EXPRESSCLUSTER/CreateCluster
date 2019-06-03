@@ -76,8 +76,7 @@ $monitor = @(@("userw", "userw", @("parameters/method", "keepalive")),
              @("volmgrw", "volmgrw1", @("parameters/devname", "ecxsd"), @("target", "volmgr1"), @("relation/type", "grp"), @("relation/name", $group[0])),
              @("diskw", "diskw1", @("parameters/object", "/dev/sdc2"), @("relation/type", "grp"), @("relation/name", $group[0])),
              @("ipw", "ipw1", @("parameters/list@0/ip", "192.168.137.1"), @("relation/type", "grp"), @("relation/name", $group[0])),
-             @("genw", "genw1", @("relation/type", "grp"), @("relation/name", $group[0]))
-             @())
+             @("genw", "genw1", @("relation/type", "grp"), @("relation/name", $group[0])))
 ##################################################
 
 
@@ -193,7 +192,7 @@ for ($i = 0; $i -lt ($monitor.Length - 1); $i++)
     {
         if ($type -eq 0)
         {
-            <# do nothing #>>
+            <# do nothing #>
         }
         elseif ($type -eq 1)
         {

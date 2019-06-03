@@ -205,7 +205,7 @@ main(
 	}
 	else
 	{
-		printf("invalid\n");
+		printf("invalid parameter (argv[1]: %s) \n", argv[1]);
 	}
 
 	try
