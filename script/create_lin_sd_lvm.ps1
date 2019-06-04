@@ -162,7 +162,6 @@ for ($i = 0; $i -lt ($resource.Length - 1); $i++)
 # add a resource dependence
 for ($i = 0; $i -lt ($rscdepend.Length - 1); $i++) 
 {
-    Write-Output "rscdepend:" $rscdepend[$i][1]
     for ($j = 0; $j -lt ($resource.Length - 1); $j++) 
     {
         for ($k = 0; $k -lt $resource[$j].Length; $k++)
@@ -176,7 +175,7 @@ for ($i = 0; $i -lt ($rscdepend.Length - 1); $i++)
 }
 
 # add a monitor resource to a cluster
-for ($i = 0; $i -lt ($monitor.Length - 1); $i++) 
+for ($i = 0; $i -lt $monitor.Length; $i++) 
 {
     .\clpcreate.exe add mon $monitor[$i][0] $monitor[$i][1]
     for ($j = 2; $j -lt $monitor[$i].Length; $j++) 

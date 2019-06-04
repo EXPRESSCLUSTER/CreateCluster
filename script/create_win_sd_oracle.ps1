@@ -12,7 +12,7 @@
 $type = 1
 # $cluster
 #  
-$cluster = @{name = "cluster"; encode = "SJIS"; os = "windows"}
+$cluster = @{name = "mycluster"; encode = "SJIS"; os = "windows"}
 #
 # $server
 #  Top of the list is master node.
@@ -36,12 +36,15 @@ $hb = @(@("0", "0"),
 #
 # $disknp
 #
-$disknp = @(@("pingnp1", "0", "10200", "0", "0", "192.168.137.1"),
+$disknp = @(@("disknp1", "0", "10100"),
             @())
+$disknpsrv = @(@("10100", "019056a3-a7ad-4de3-9ed8-d5e752e501ea", "R:\"),
+               @(("10100", "019056a3-a7ad-4de3-9ed8-d5e752e501ea", "R:\")),
+               @())
 #
 # $pingnp
 #
-$pingnp = @(@("pingnp1", "0", "10200", "0", "0", "192.168.1.144"),
+$pingnp = @(@("pingnp1", "1", "10200", "0", "0", "192.168.1.144"),
             @())
 #
 # $group
@@ -49,28 +52,39 @@ $pingnp = @(@("pingnp1", "0", "10200", "0", "0", "192.168.1.144"),
 $group = @(@("failover-oracle"),
            @())
 #
+# $resource
+#
 $resource = @(@(@("fip","fip", @("ip", "192.168.1.199")), 
                 @("sd", "sd", @("volumemountpoint", "S:")),
                 @("service", "service-db", @("name", "OracleServiceSID")),
                 @("service", "service-listener", @("name", "OracleOraDB12Home1TNSListener")),
                 @("script", "script-db")),
               @())
+#
+# $rscdepend
+#
 $rscdepend = @(@("fip", "sd"),
                @("sd", "service-db"),
                @("service-db", "service-listener"),
                @("service-listener", "script-db"),
                @())
+#
+# $monitor
 $monitor = @(@("userw", "userw"),
-             )
-
-<#
-.\clpcreate.exe add mon userw userw
-.\clpcreate.exe add mon ipw ipw-gw
-.\clpcreate.exe add mon fipw fipw
-.\clpcreate.exe add mon servicew servicew-db
-.\clpcreate.exe add mon servicew servicew-listener
-.\clpcreate.exe add mon oraclew oraclew
-#>
+             @("ipw", "ipw-gw", @("relation/type", "grp"), @("relation/name", $group[0]), @("parameters/list@1/ip", "192.168.1.144")),
+             @("fipw", "fipw", @("parameters/monmii", "1"), @("target", "fip"), @("relation/type", "grp"), @("relation/name", $group[0])),
+             @("servicew", "servicew-db", @("target", "service-db"), @("relation/type", "grp"), @("relation/name", $group[0])),
+             @("servicew", "servicew-listener", @("target", "service-listener"), @("relation/type", "grp"), @("relation/name", $group[0])),
+             @("oraclew", "oraclew", @("target", "script-db"), @("relation/type", "grp"), @("relation/name", $group[0]), @("agentparam/dbname", "sid"), @("agentparam/password", "80000006b17b582700630056")))
+#
+# $hba
+$hba = @(@($server[0], "0", "3", "ROOT\ISCSIPRT", "0000"),
+         @($server[1], "0", "3", "ROOT\ISCSIPRT", "0000"))
+#
+# $rscguid
+$rscguid = @(@($server[0], "sd", "205bce9a-e322-442d-af11-776f8b6af913"),
+             @($server[1], "sd", "205bce9a-e322-442d-af11-776f8b6af913"),
+             @())
 ##################################################
 
 
@@ -78,10 +92,10 @@ $monitor = @(@("userw", "userw"),
 # You don't need to change the following lines, maybe.
 #
 # initialize
-.\.\clpcreate.exe init
+.\clpcreate.exe init
 
 # add a cluster to initial configuration
-.\.\clpcreate.exe add cls $cluster["name"] $cluster["encode"] $cluster["os"]
+.\clpcreate.exe add cls $cluster["name"] $cluster["encode"] $cluster["os"]
 
 # add a server to a cluster
 for ($i = 0; $i -lt ($server.Length - 1); $i++) 
@@ -104,24 +118,36 @@ for ($i = 0; $i -lt ($hb.Length - 1); $i++)
     .\clpcreate.exe add hb $hb[$i][0] $hb[$i][1]  
 }
 
-
 # add a HBA to a server
-.\clpcreate.exe add hba ws2016-197 0 portnumber 3
-.\clpcreate.exe add hba ws2016-197 0 deviceid ROOT\ISCSIPRT
-.\clpcreate.exe add hba ws2016-197 0 instanceid 0000
-.\clpcreate.exe add hba ws2016-198 0 portnumber 3
-.\clpcreate.exe add hba ws2016-198 0 deviceid ROOT\ISCSIPRT
-.\clpcreate.exe add hba ws2016-198 0 instanceid 0000
+for ($i = 0; $i -lt $hba.Length; $i++)
+{
+    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] portnumber $hba[$i][2]
+    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] deviceid $hba[$i][3]
+    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] deviceid $hba[$i][4]
+}
 
 # add a network partition resource to a cluster
-.\clpcreate.exe add np disknp disknp1 0 10100 
-.\clpcreate.exe add np pingnp pingnp1 1 10200 0 0 192.168.1.144
+for ($i = 0; $i -lt ($pingnp.Length - 1); $i++) 
+{
+    .\clpcreate.exe add np disk $disknp[$i][0] $disknp[$i][1] $disknp[$i][2]
+}
+for ($i = 0; $i -lt ($pingnp.Length - 1); $i++) 
+{
+    .\clpcreate.exe add np ping $pingnp[$i][0] $pingnp[$i][1] $pingnp[$i][2] $pingnp[$i][3] $pingnp[$i][4] $pingnp[$i][5]
+}
 
 # add a network partition to a server
-.\clpcreate.exe add npsrv disknp ws2016-197 10100 019056a3-a7ad-4de3-9ed8-d5e752e501ea R:\
-.\clpcreate.exe add npsrv disknp ws2016-198 10100 019056a3-a7ad-4de3-9ed8-d5e752e501ea R:\
-.\clpcreate.exe add npsrv pingnp ws2016-197 10200 1
-.\clpcreate.exe add npsrv pingnp ws2016-198 10200 1
+for ($i = 0; $i -lt ($server.Length - 1); $i++) 
+{
+    .\clpcreate.exe add npsrv disk $server[$i] $disknpsrv[$i][0] $disknpsrv[$i][1] $disknpsrv[$i][2]
+}
+for ($i = 0; $i -lt ($server.Length - 1); $i++) 
+{
+    for ($j = 0; $j -lt ($pingnp.Length - 1); $j++)
+    {
+        .\clpcreate.exe add npsrv ping $server[$i] $pingnp[$j][2] $pingnp[$j][1] 
+    }
+}
 
 # add a group to a cluster
 for ($i = 0; $i -lt ($group.Length - 1); $i++) 
@@ -145,7 +171,6 @@ for ($i = 0; $i -lt ($resource.Length - 1); $i++)
 # add a resource dependence
 for ($i = 0; $i -lt ($rscdepend.Length - 1); $i++) 
 {
-    Write-Output "rscdepend:" $rscdepend[$i][1]
     for ($j = 0; $j -lt ($resource.Length - 1); $j++) 
     {
         for ($k = 0; $k -lt $resource[$j].Length; $k++)
@@ -158,143 +183,59 @@ for ($i = 0; $i -lt ($rscdepend.Length - 1); $i++)
     }
 }
 
-
-##################################################
 # add GUID to a resource
-.\clpcreate.exe add rscguid sd sd ws2016-197 volumeguid 205bce9a-e322-442d-af11-776f8b6af913
-.\clpcreate.exe add rscguid sd sd ws2016-198 volumeguid 205bce9a-e322-442d-af11-776f8b6af913
-##################################################
-
-##################################################
-# add a monitor to a cluster
-.\clpcreate.exe add mon userw userw
-.\clpcreate.exe add mon ipw ipw-gw
-.\clpcreate.exe add mon fipw fipw
-.\clpcreate.exe add mon servicew servicew-db
-.\clpcreate.exe add mon servicew servicew-listener
-.\clpcreate.exe add mon oraclew oraclew
-##################################################
-
-##################################################
-# add a parameter to a monitor
-# ----------------------------------------
-# add a parameter to a monitor (user space monitor)
-.\clpcreate.exe add monparam userw userw relation/type cls
-.\clpcreate.exe add monparam userw userw relation/name LocalServer
-
-# add a parameter to a monitor (IP monitor)
-.\clpcreate.exe add monparam ipw ipw-gw relation/type grp
-.\clpcreate.exe add monparam ipw ipw-gw relation/name failover-oracle
-.\clpcreate.exe add monparam ipw ipw-gw parameters/list@1/ip 192.168.1.144
-if ($type -eq 0)
+for ($i = 0; $i -lt ($rscguid.Length - 1); $i++) 
 {
-    .\clpcreate.exe add monparam ipw ipw-gw emergency/threshold/restart 0
+    for ($j = 0; $j -lt ($resource.Length - 1); $j++) 
+    {
+        for ($k = 0; $k -lt $resource[$j].Length; $k++)
+        {
+            if ($rscguid[$i][1] -eq $resource[$j][$k][1])
+            {
+                .\clpcreate.exe add rscguid $resource[$j][$k][0] $resource[$j][$k][1] $rscguid[$i][0] volumeguid $rscguid[$i][2]
+            }
+        }
+    }
 }
-elseif ($type -eq 1)
+# add a monitor resource to a cluster
+for ($i = 0; $i -lt $monitor.Length; $i++) 
 {
-    .\clpcreate.exe add monparam ipw ipw-gw emergency/threshold/restart 0
-    .\clpcreate.exe add monparam ipw ipw-gw emergency/timeout/notreconfirmation/use 1
-    .\clpcreate.exe add monparam ipw ipw-gw emergency/timeout/notrecovery/use 1
+    .\clpcreate.exe add mon $monitor[$i][0] $monitor[$i][1]
+    for ($j = 2; $j -lt $monitor[$i].Length; $j++) 
+    {
+        .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] $monitor[$i][$j][0] $monitor[$i][$j][1]
+    }
+    if ($monitor[$i][0] -eq "userw")
+    {
+        .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] relation/type cls
+        .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] relation/name LocalServer
+    }
+    else 
+    {
+        if ($type -eq 0)
+        {
+            <# do nothing #>>
+        }
+        elseif ($type -eq 1)
+        {
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] emergency/threshold/restart 0
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] emergency/timeout/notreconfirmation/use 1
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] emergency/timeout/notrecovery/use 1
+        }
+        elseif ($type -eq 2)
+        {
+            # set BSoD (6)
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] relation/type cls
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] relation/name LocalServer
+            .\clpcreate.exe add monparam $monitor[$i][0] $monitor[$i][1] emergency/action 6
+        }
+    }
 }
-elseif ($type -eq 2)
-{
-    .\clpcreate.exe add monparam ipw ipw-gw relation/type cls
-    .\clpcreate.exe add monparam ipw ipw-gw relation/name LocalServer
-    .\clpcreate.exe add monparam ipw ipw-gw emergency/action 6
-}
-
-# add a parameter to a monitor (floating IP monitor)
-.\clpcreate.exe add monparam fipw fipw target fip
-.\clpcreate.exe add monparam fipw fipw relation/type grp
-.\clpcreate.exe add monparam fipw fipw relation/name failover-oracle
-.\clpcreate.exe add monparam fipw fipw parameters/monmii 1
-if ($type -eq 0)
-{
-    .\clpcreate.exe add monparam fipw fipw emergency/threshold/restart 0
-}
-elseif ($type -eq 1)
-{
-    .\clpcreate.exe add monparam fipw fipw emergency/threshold/restart 0
-    .\clpcreate.exe add monparam fipw fipw emergency/timeout/notreconfirmation/use 1
-    .\clpcreate.exe add monparam fipw fipw emergency/timeout/notrecovery/use 1
-}
-elseif ($type -eq 2)
-{
-    .\clpcreate.exe add monparam fipw fipw relation/type cls
-    .\clpcreate.exe add monparam fipw fipw relation/name LocalServer
-    .\clpcreate.exe add monparam fipw fipw emergency/action 6
-}
-
-# add a parameter to a monitor (service monitor for Oracle DB)
-.\clpcreate.exe add monparam servicew servicew-db target service-db
-.\clpcreate.exe add monparam servicew servicew-db relation/type grp
-.\clpcreate.exe add monparam servicew servicew-db relation/name failover-oracle
-if ($type -eq 0)
-{
-    .\clpcreate.exe add monparam servicew servicew-db emergency/threshold/restart 0
-}
-elseif ($type -eq 1)
-{
-    .\clpcreate.exe add monparam servicew servicew-db emergency/threshold/restart 0
-    .\clpcreate.exe add monparam servicew servicew-db emergency/timeout/notreconfirmation/use 1
-    .\clpcreate.exe add monparam servicew servicew-db emergency/timeout/notrecovery/use 1
-}
-elseif ($type -eq 2)
-{
-    .\clpcreate.exe add monparam servicew servicew-db relation/type cls
-    .\clpcreate.exe add monparam servicew servicew-db relation/name LocalServer
-    .\clpcreate.exe add monparam servicew servicew-db emergency/action 6
-}
-
-# add a parameter to a monitor (service monitor for Oracle Listener)
-.\clpcreate.exe add monparam servicew servicew-listener target service-listener
-.\clpcreate.exe add monparam servicew servicew-listener relation/type grp
-.\clpcreate.exe add monparam servicew servicew-listener relation/name failover-oracle
-if ($type -eq 0)
-{
-    .\clpcreate.exe add monparam servicew servicew-listener emergency/threshold/restart 0
-}
-elseif ($type -eq 1)
-{
-    .\clpcreate.exe add monparam servicew servicew-listener emergency/threshold/restart 0
-    .\clpcreate.exe add monparam servicew servicew-listener emergency/timeout/notreconfirmation/use 1
-    .\clpcreate.exe add monparam servicew servicew-listener emergency/timeout/notrecovery/use 1
-} 
-elseif ($type -eq 2)
-{
-    .\clpcreate.exe add monparam servicew servicew-listener relation/type cls
-    .\clpcreate.exe add monparam servicew servicew-listener relation/name LocalServer
-    .\clpcreate.exe add monparam servicew servicew-listener emergency/action 6
-}
-
-# add a parameter to a monitor (Oracle monitor)
-.\clpcreate.exe add monparam oraclew oraclew target script-db
-.\clpcreate.exe add monparam oraclew oraclew relation/type grp
-.\clpcreate.exe add monparam oraclew oraclew relation/name failover-oracle
-.\clpcreate.exe add monparam oraclew oraclew agentparam/dbname sid
-.\clpcreate.exe add monparam oraclew oraclew agentparam/password 80000006b17b582700630056   # password is "oracle"
-if ($type -eq 0)
-{
-    .\clpcreate.exe add monparam oraclew oraclew emergency/threshold/restart 0
-}
-elseif ($type -eq 1)
-{
-    .\clpcreate.exe add monparam oraclew oraclew emergency/threshold/restart 0
-    .\clpcreate.exe add monparam oraclew oraclew emergency/timeout/notreconfirmation/use 1
-    .\clpcreate.exe add monparam oraclew oraclew emergency/timeout/notrecovery/use 1
-}
-elseif ($type -eq 2)
-{
-    .\clpcreate.exe add monparam oraclew oraclew relation/type cls
-    .\clpcreate.exe add monparam oraclew oraclew relation/name LocalServer
-    .\clpcreate.exe add monparam oraclew oraclew emergency/action 6
-}
-
 
 # add object number
 $srvnum = $server.Length - 1
 Write-Output "srvnum: $srvnum"
-$hbnum = ($hb.Length - 1) + ($diskhb.Length - 1)
+$hbnum = ($hb.Length - 1)
 Write-Output "hbnum: $hbnum"
 $npnum = ($pingnp.Length - 1)
 Write-Output "npnum: $npnum"
