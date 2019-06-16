@@ -1,5 +1,12 @@
 ##################################################
 # Sample script for Windows
+#
+#  If you use disk resource (e.g. shared disk), 
+#  run clpgetdisk.exe before run this script.
+#  Regarding clpgetdisk.exe, please refer to the 
+#  following URL.
+#  https://github.com/EXPRESSCLUSTER/GetDisk
+# 
 ##################################################
 # Parameters
 #-------------------------------------------------
@@ -38,9 +45,6 @@ $hb = @(@("0", "0"),
 #
 $disknp = @(@("disknp1", "0", "10100"),
             @())
-$disknpsrv = @(@("10100", "019056a3-a7ad-4de3-9ed8-d5e752e501ea", "R:\"),
-               @(("10100", "019056a3-a7ad-4de3-9ed8-d5e752e501ea", "R:\")),
-               @())
 #
 # $pingnp
 #
@@ -55,7 +59,7 @@ $group = @(@("failover-oracle"),
 # $resource
 #
 $resource = @(@(@("fip","fip", @("ip", "192.168.1.199")), 
-                @("sd", "sd", @("volumemountpoint", "S:")),
+                @("sd", "sd", @("volumemountpoint", "S:\")),
                 @("service", "service-db", @("name", "OracleServiceSID")),
                 @("service", "service-listener", @("name", "OracleOraDB12Home1TNSListener")),
                 @("script", "script-db")),
@@ -76,15 +80,6 @@ $monitor = @(@("userw", "userw"),
              @("servicew", "servicew-db", @("target", "service-db"), @("relation/type", "grp"), @("relation/name", $group[0])),
              @("servicew", "servicew-listener", @("target", "service-listener"), @("relation/type", "grp"), @("relation/name", $group[0])),
              @("oraclew", "oraclew", @("target", "script-db"), @("relation/type", "grp"), @("relation/name", $group[0]), @("agentparam/dbname", "sid"), @("agentparam/password", "80000006b17b582700630056")))
-#
-# $hba
-$hba = @(@($server[0], "0", "3", "ROOT\ISCSIPRT", "0000"),
-         @($server[1], "0", "3", "ROOT\ISCSIPRT", "0000"))
-#
-# $rscguid
-$rscguid = @(@($server[0], "sd", "205bce9a-e322-442d-af11-776f8b6af913"),
-             @($server[1], "sd", "205bce9a-e322-442d-af11-776f8b6af913"),
-             @())
 ##################################################
 
 
@@ -119,11 +114,27 @@ for ($i = 0; $i -lt ($hb.Length - 1); $i++)
 }
 
 # add a HBA to a server
-for ($i = 0; $i -lt $hba.Length; $i++)
+for ($i = 0; $i -lt ($server.Length - 1); $i++)
 {
-    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] portnumber $hba[$i][2]
-    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] deviceid $hba[$i][3]
-    .\clpcreate.exe add hba $hba[$i][0] $hba[$i][1] deviceid $hba[$i][4]
+    $filename = $server[$i].Replace("\n", "") + "_hba.csv"
+    $tempcontent = Get-Content .\$filename
+    if ($tempcontent.Length -le 2)
+    {
+        $tempcsv = Import-Csv .\$filename
+        .\clpcreate.exe add hba $server[$i] 0 portnumber $tempcsv.portnumber
+        .\clpcreate.exe add hba $server[$i] 0 deviceid $tempcsv.deviceid
+        .\clpcreate.exe add hba $server[$i] 0 instanceid $tempcsv.instanceid
+    }
+    else 
+    {
+        $tempcsv = Import-Csv .\$filename
+        for ($j = 0; $j -lt $tempcsv.Count; $j++)
+        {
+            .\clpcreate.exe add hba $server[$i] $j portnumber $tempcsv[$j].portnumber
+            .\clpcreate.exe add hba $server[$i] $j deviceid $tempcsv[$j].deviceid
+            .\clpcreate.exe add hba $server[$i] $j instanceid $tempcsv[$j].instanceid
+        }
+    }
 }
 
 # add a network partition resource to a cluster
@@ -139,7 +150,21 @@ for ($i = 0; $i -lt ($pingnp.Length - 1); $i++)
 # add a network partition to a server
 for ($i = 0; $i -lt ($server.Length - 1); $i++) 
 {
-    .\clpcreate.exe add npsrv disk $server[$i] $disknpsrv[$i][0] $disknpsrv[$i][1] $disknpsrv[$i][2]
+    $filename = $server[$i].Replace("\n", "") + "_disknp.csv"
+    $tempcontent = Get-Content .\$filename
+    if ($tempcontent.Length -le 2)
+    {
+        $tempcsv = Import-Csv .\$filename
+        .\clpcreate.exe add npsrv disk $server[$i] 10100 $tempcsv.volumeguid $tempcsv.drive
+    }
+    else 
+    {
+        $tempcsv = Import-Csv .\$filename
+        for ($j = 0; $j -lt $tempcsv.Count; $j++)
+        {
+            .\clpcreate.exe add npsrv disk $server[$i] 10100 $tempcsv[$j].volumeguid $tempcsv[$j].drive
+        }
+    }
 }
 for ($i = 0; $i -lt ($server.Length - 1); $i++) 
 {
@@ -184,19 +209,35 @@ for ($i = 0; $i -lt ($rscdepend.Length - 1); $i++)
 }
 
 # add GUID to a resource
-for ($i = 0; $i -lt ($rscguid.Length - 1); $i++) 
+for ($i = 0; $i -lt ($resource.Length - 1); $i++) 
 {
-    for ($j = 0; $j -lt ($resource.Length - 1); $j++) 
+    for ($j = 0; $j -lt $resource[$i].Length; $j++)
     {
-        for ($k = 0; $k -lt $resource[$j].Length; $k++)
+        if ($resource[$i][$j][0] -eq "sd")
         {
-            if ($rscguid[$i][1] -eq $resource[$j][$k][1])
+            for ($k = 0; $k -lt ($server.Length - 1); $k++) 
             {
-                .\clpcreate.exe add rscguid $resource[$j][$k][0] $resource[$j][$k][1] $rscguid[$i][0] volumeguid $rscguid[$i][2]
+                $filename = $server[$k].Replace("\n", "") + "_sd.csv"
+                $tempcontent = Get-Content .\$filename
+                if ($tempcontent.Length -le 2)
+                {
+                    $tempcsv = Import-Csv .\$filename
+                    .\clpcreate.exe add rscguid $resource[$i][$j][0] $resource[$i][$j][1] $server[$k] volumeguid $tempcsv.volumeguid
+                }
+                else 
+                {
+                    $tempcsv = Import-Csv .\$filename
+                    for ($l = 0; $l -lt $tempcsv.Count; $l++)
+                    {
+                        $tempcsv = Import-Csv .\$filename
+                        .\clpcreate.exe add rscguid $resource[$i][$j][0] $resource[$i][$j][1] $server[$k] volumeguid $tempcsv[$l].volumeguid
+                    }
+                }
             }
         }
     }
 }
+
 # add a monitor resource to a cluster
 for ($i = 0; $i -lt $monitor.Length; $i++) 
 {
